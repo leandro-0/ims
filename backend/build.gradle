@@ -39,6 +39,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
     testImplementation 'io.cucumber:cucumber-java:7.23.0'
     testImplementation 'io.cucumber:cucumber-junit:7.23.0'
     testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.23.0'
