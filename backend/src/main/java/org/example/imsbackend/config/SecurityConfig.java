@@ -18,34 +18,35 @@ import org.springframework.core.annotation.Order;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JWTConverter jwtConverter;
+        private final JWTConverter jwtConverter;
 
-    @Bean
-    @Order(1)
-    public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher("/api/v1/**")
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        @Bean
+        @Order(1)
+        public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .securityMatcher("/api/v1/**")
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(authorize -> authorize
+                                                .anyRequest().permitAll())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    @Order(2)
-    public SecurityFilterChain protectedSecurityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)))
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        // @Bean
+        // @Order(2)
+        // public SecurityFilterChain protectedSecurityFilterChain(HttpSecurity http)
+        // throws Exception {
+        // http
+        // .csrf(AbstractHttpConfigurer::disable)
+        // .authorizeHttpRequests(authorize -> authorize
+        // .anyRequest().authenticated())
+        // .oauth2ResourceServer(oauth2 -> oauth2
+        // .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)))
+        // .sessionManagement(session ->
+        // session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        return http.build();
-    }
+        // return http.build();
+        // }
 }

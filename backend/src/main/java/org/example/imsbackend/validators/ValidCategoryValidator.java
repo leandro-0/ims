@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.annotations.ValidCategory;
 
-public class ValidCategoryValidator implements ConstraintValidator<ValidCategory, String> {
+public class ValidCategoryValidator implements ConstraintValidator<ValidCategory, Object> {
     private boolean useDisplayName;
 
     @Override
@@ -14,18 +14,21 @@ public class ValidCategoryValidator implements ConstraintValidator<ValidCategory
     }
 
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (value == null) return true;
+    public boolean isValid(Object value, ConstraintValidatorContext context) {
+        if (value == null || value instanceof Category)
+            return true;
+        if (!(value instanceof String))
+            return false;
 
         if (useDisplayName) {
             for (Category category : Category.values()) {
-                if (category.getDisplayName().equals(value)) {
+                if (category.getDisplayName().equals((String) value)) {
                     return true;
                 }
             }
         } else {
             try {
-                Category.valueOf(value.toUpperCase());
+                Category.valueOf(((String) value).toUpperCase());
                 return true;
             } catch (IllegalArgumentException e) {
                 return false;
