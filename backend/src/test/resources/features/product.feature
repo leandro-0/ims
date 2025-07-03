@@ -5,7 +5,8 @@ Feature: Product Management
     And the database is clean
 
   Scenario: Retrieve products with pagination
-    Given the following products exist:
+    Given I am an anonymous user
+    And the following products exist:
       | name      | description   | price | initialStock | stock | category    |
       | Product A | Description A |    50 |          100 |    90 | ELECTRONICS |
       | Product B | Description B |   150 |           50 |    45 | ELECTRONICS |
@@ -22,6 +23,7 @@ Feature: Product Management
     And the total elements should be 8
 
   Scenario: Create a new product successfully
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Electronics Widget             |
       | description  | High-quality electronic device |
@@ -32,6 +34,7 @@ Feature: Product Management
     Then I should receive a 201 response
 
   Scenario: Create a product with blank name
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         |                   |
       | description  | Valid description |
@@ -42,6 +45,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with blank description
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  |                    |
@@ -52,6 +56,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with negative price
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -62,6 +67,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with null price
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -72,6 +78,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with negative initial stock
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -82,6 +89,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with null initial stock
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -92,6 +100,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with negative stock
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -102,6 +111,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with null stock
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -112,6 +122,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with invalid category
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -122,6 +133,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Create a product with null category
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I create a product with the following details:
       | name         | Valid Product Name |
       | description  | Valid description  |
@@ -132,6 +144,7 @@ Feature: Product Management
     Then I should receive a 400 response
 
   Scenario: Retrieve all products without filters
+    Given I am an anonymous user
     Given the following products exist:
       | name      | description   | price | initialStock | stock | category    |
       | Product 1 | Description 1 |   100 |           50 |    45 | ELECTRONICS |
@@ -142,7 +155,8 @@ Feature: Product Management
     And I should receive 3 products
 
   Scenario: Retrieve products with name filter
-    Given the following products exist:
+    Given I am an anonymous user
+    And the following products exist:
       | name           | description     | price | initialStock | stock | category    |
       | Laptop Pro     | High-end laptop |  1200 |           10 |     8 | ELECTRONICS |
       | Laptop Basic   | Entry laptop    |   600 |           20 |    15 | ELECTRONICS |
@@ -153,7 +167,8 @@ Feature: Product Management
     And all products should contain "laptop" in their name
 
   Scenario: Retrieve products with category filter
-    Given the following products exist:
+    Given I am an anonymous user
+    And the following products exist:
       | name    | description    | price | initialStock | stock | category |
       | T-Shirt | Cotton t-shirt |    25 |          100 |    90 | CLOTHING |
       | Jeans   | Denim jeans    |    60 |           50 |    45 | CLOTHING |
@@ -164,7 +179,8 @@ Feature: Product Management
     And all products should have category "CLOTHING"
 
   Scenario: Retrieve products with price range filter
-    Given the following products exist:
+    Given I am an anonymous user
+    And the following products exist:
       | name      | description   | price | initialStock | stock | category    |
       | Product A | Description A |    50 |          100 |    90 | ELECTRONICS |
       | Product B | Description B |   150 |           50 |    45 | ELECTRONICS |
@@ -175,7 +191,8 @@ Feature: Product Management
     And all products should have price between 100 and 200
 
   Scenario: Retrieve a specific product by ID
-    Given a product exists with the following details:
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
+    And a product exists with the following details:
       | name         | Test Product     |
       | description  | Test Description |
       | price        |            99.99 |
@@ -187,11 +204,13 @@ Feature: Product Management
     And the product details should match the created product
 
   Scenario: Retrieve a non-existent product by ID
+    Given I am an anonymous user
     When I retrieve a product with a non-existent ID
     Then I should receive a 404 response
 
   Scenario: Update an existing product
-    Given a product exists with the following details:
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
+    And a product exists with the following details:
       | name         | Original Product     |
       | description  | Original Description |
       | price        |               100.00 |
@@ -208,10 +227,12 @@ Feature: Product Management
     Then I should receive a 200 response
 
   Scenario: Update a non-existent product
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I update a product with a non-existent ID
     Then I should receive a 404 response
 
   Scenario: Delete an existing product
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     Given a product exists with the following details:
       | name         | Product to Delete |
       | description  | Will be deleted   |
@@ -223,11 +244,13 @@ Feature: Product Management
     And I should receive a 204 response
 
   Scenario: Delete a non-existent product
+    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
     When I delete a product with a non-existent ID
     Then I should receive a 404 response
 
   Scenario: Complex filtering with multiple criteria
-    Given the following products exist:
+    Given I am an anonymous user
+    And the following products exist:
       | name          | description      | price | initialStock | stock | category    |
       | Gaming Laptop | High-end gaming  |  1500 |            5 |     3 | ELECTRONICS |
       | Office Laptop | Business laptop  |   800 |           15 |    12 | ELECTRONICS |

@@ -21,13 +21,13 @@ import java.util.UUID;
 public class ProductController {
     private final ProductService productService;
 
-    @GetMapping()
+    @GetMapping("/search")
     public ResponseEntity<Page<Product>> getAllProductsWithFilter(@ModelAttribute ProductFilter filter) {
         Page<Product> products = productService.getAllProducts(filter);
         return ResponseEntity.ok(products);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/details")
     public ResponseEntity<Product> getProductById(@PathVariable("id") String id) {
         try {
             Optional<Product> product = productService.getProductById(UUID.fromString(id));
