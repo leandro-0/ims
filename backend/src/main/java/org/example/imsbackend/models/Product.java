@@ -48,7 +48,7 @@ public class Product {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @ValidCategory(useDisplayName = true)
+    @ValidCategory
     @Column(nullable = false)
     private Category category;
 }
