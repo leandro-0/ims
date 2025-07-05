@@ -16,6 +16,4 @@ public @interface ValidCategory {
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};
-
-    boolean useDisplayName() default false;
 }
