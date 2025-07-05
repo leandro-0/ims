@@ -8,6 +8,7 @@ import org.example.imsbackend.services.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,12 +40,14 @@ public class ProductController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('role_admin')")
     public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
         Product savedProduct = productService.saveProduct(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('role_admin')")
     public ResponseEntity<Product> updateProduct(@PathVariable("id") String id, @Valid @RequestBody Product product) {
         try {
             UUID productId = UUID.fromString(id);
@@ -61,6 +64,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('role_admin')")
     public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id) {
         try {
             UUID productId = UUID.fromString(id);
