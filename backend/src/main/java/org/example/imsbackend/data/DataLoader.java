@@ -1,12 +1,11 @@
 package org.example.imsbackend.data;
 
+import net.datafaker.Faker;
 import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.models.Product;
 import org.example.imsbackend.repositories.ProductRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import com.github.javafaker.Faker;
 
 import lombok.RequiredArgsConstructor;
 

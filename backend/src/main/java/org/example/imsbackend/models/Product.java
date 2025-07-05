@@ -34,17 +34,17 @@ public class Product {
     @NotNull(message = "Price cannot be null")
     @Min(value = 0, message = "Price must be greater than or equal to zero")
     @Column(nullable = false)
-    private double price;
+    private Double price;
 
     @NotNull(message = "Initial stock cannot be null")
     @Min(value = 0, message = "Initial stock must be greater than or equal to zero")
     @Column(nullable = false)
-    private int initialStock;
+    private Integer initialStock;
 
     @NotNull(message = "Stock cannot be null")
     @Min(value = 0, message = "Stock must be greater than or equal to zero")
     @Column(nullable = false)
-    private int stock;
+    private Integer stock;
 
     @NotNull
     @Enumerated(EnumType.STRING)
