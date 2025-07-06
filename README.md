@@ -11,7 +11,7 @@
 
 - [Plan de Proyecto]()
 - [Gestión de Tareas]()
-- [Gestión de Riesgos]()
+- [Gestión de Riesgos](docs/risks-management/README.md)
 
 ### Documentación
 
