@@ -15,7 +15,7 @@
 
 ### Documentación
 
-- [Documentación de Requisitos]()
+- [Documentación de Requisitos](docs/requirements/README.md)
 - [Guía de Pruebas](docs/tests-docs/README.md)
 
 ### Gestión de Calidad
