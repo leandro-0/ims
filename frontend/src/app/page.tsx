@@ -31,136 +31,29 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  initialStock: number
-  stock: number
-  category: string
-}
-
-interface ProductResponse {
-  content: Product[]
-  pageable: {
-    pageNumber: number
-    pageSize: number
-    sort: {
-      empty: boolean
-      sorted: boolean
-      unsorted: boolean
-    }
-    offset: number
-    paged: boolean
-    unpaged: boolean
-  }
-  last: boolean
-  totalPages: number
-  totalElements: number
-  first: boolean
-  size: number
-  number: number
-  sort: {
-    empty: boolean
-    sorted: boolean
-    unsorted: boolean
-  }
-  numberOfElements: number
-  empty: boolean
-}
-
-const CATEGORIES = [
-  { value: "FURNITURE", label: "Muebles" },
-  { value: "ELECTRONICS", label: "Electrónicos" },
-  { value: "CLOTHING", label: "Ropa" },
-  { value: "BOOKS", label: "Libros" },
-  { value: "SPORTS", label: "Deportes" },
-  { value: "HOME", label: "Hogar" },
-]
+import {
+  productService,
+  handleApiError,
+  PRODUCT_CATEGORIES,
+  type Product,
+  type ProductFilters,
+} from "@/services/product-service"
 
 export default function InventoryManagement() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [minPrice, setMinPrice] = useState("")
   const [maxPrice, setMaxPrice] = useState("")
   const [currentPage, setCurrentPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   const [totalElements, setTotalElements] = useState(0)
+  const [pageSize] = useState(10)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
 
-  // Datos de ejemplo para simular el backend
-  const mockData: ProductResponse = {
-    content: [
-      {
-        id: "451bf5ca-b5f3-4c6e-84cf-28dd4755341c",
-        name: "Armario Empotrado",
-        description: "Armario empotrado de madera maciza con acabado en roble natural",
-        price: 842.75,
-        initialStock: 22,
-        stock: 8,
-        category: "FURNITURE",
-      },
-      {
-        id: "552bf5ca-b5f3-4c6e-84cf-28dd4755341d",
-        name: "Laptop Gaming",
-        description: "Laptop para gaming con procesador Intel i7 y tarjeta gráfica RTX 4060",
-        price: 1299.99,
-        initialStock: 15,
-        stock: 12,
-        category: "ELECTRONICS",
-      },
-      {
-        id: "653bf5ca-b5f3-4c6e-84cf-28dd4755341e",
-        name: "Camiseta Deportiva",
-        description: "Camiseta deportiva de material transpirable para entrenamiento",
-        price: 29.99,
-        initialStock: 50,
-        stock: 35,
-        category: "CLOTHING",
-      },
-      {
-        id: "754bf5ca-b5f3-4c6e-84cf-28dd4755341f",
-        name: "Mesa de Centro",
-        description: "Mesa de centro moderna con diseño minimalista",
-        price: 199.5,
-        initialStock: 10,
-        stock: 7,
-        category: "FURNITURE",
-      },
-      {
-        id: "855bf5ca-b5f3-4c6e-84cf-28dd4755341g",
-        name: "Auriculares Bluetooth",
-        description: "Auriculares inalámbricos con cancelación de ruido",
-        price: 149.99,
-        initialStock: 25,
-        stock: 18,
-        category: "ELECTRONICS",
-      },
-    ],
-    pageable: {
-      pageNumber: 0,
-      pageSize: 10,
-      sort: { empty: false, sorted: true, unsorted: false },
-      offset: 0,
-      paged: true,
-      unpaged: false,
-    },
-    last: false,
-    totalPages: 1,
-    totalElements: 5,
-    first: true,
-    size: 10,
-    number: 0,
-    sort: { empty: false, sorted: true, unsorted: false },
-    numberOfElements: 5,
-    empty: false,
-  }
 
   const [formData, setFormData] = useState({
     name: "",
@@ -170,43 +63,25 @@ export default function InventoryManagement() {
     category: "",
   })
 
-  // Simular carga de datos del backend
+  // Cargar productos desde el backend
   const loadProducts = async () => {
     setLoading(true)
     try {
-      // Simular delay de API
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Filtrar productos según búsqueda, categorías y precio
-      let filteredProducts = mockData.content
-
-      // Filtro por búsqueda
-      if (searchTerm) {
-        filteredProducts = filteredProducts.filter(
-          (product) =>
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.description.toLowerCase().includes(searchTerm.toLowerCase()),
-        )
+      const filters: ProductFilters = {
+        page: currentPage,
+        size: pageSize,
+        search: searchTerm || undefined,
+        categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+        minPrice: minPrice ? Number.parseFloat(minPrice) : undefined,
+        maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined,
+        sort: "name,asc", // Ordenar por nombre ascendente
       }
 
-      // Filtro por categorías múltiples
-      if (selectedCategories.length > 0) {
-        filteredProducts = filteredProducts.filter((product) => selectedCategories.includes(product.category))
-      }
+      const response = await productService.getProducts(filters)
 
-      // Filtro por precio mínimo
-      if (minPrice && !isNaN(Number.parseFloat(minPrice))) {
-        filteredProducts = filteredProducts.filter((product) => product.price >= Number.parseFloat(minPrice))
-      }
-
-      // Filtro por precio máximo
-      if (maxPrice && !isNaN(Number.parseFloat(maxPrice))) {
-        filteredProducts = filteredProducts.filter((product) => product.price <= Number.parseFloat(maxPrice))
-      }
-
-      setProducts(filteredProducts)
-      setTotalElements(filteredProducts.length)
-      setTotalPages(Math.ceil(filteredProducts.length / 10))
+      setProducts(response.content)
+      setTotalElements(response.totalElements)
+      setTotalPages(response.totalPages)
     } catch (error) {
       toast.error("No se pudieron cargar los productos")
     } finally {
@@ -224,24 +99,22 @@ export default function InventoryManagement() {
       return
     }
 
-    const newProduct: Product = {
-      id: crypto.randomUUID(),
-      name: formData.name,
-      description: formData.description,
-      price: Number.parseFloat(formData.price),
-      initialStock: Number.parseInt(formData.initialStock),
-      stock: Number.parseInt(formData.initialStock),
-      category: formData.category,
+    try {
+      await productService.createProduct({
+        name: formData.name,
+        description: formData.description,
+        price: Number.parseFloat(formData.price),
+        initialStock: Number.parseInt(formData.initialStock),
+        category: formData.category,
+    })
+
+      setFormData({ name: "", description: "", price: "", initialStock: "", category: "" })
+      setIsAddDialogOpen(false)
+      loadProducts()
+      toast.success("Producto agregado correctamente")
+    } catch (error) {
+      toast.error("No se pudo agregar el producto")
     }
-
-    // Simular llamada al backend
-    mockData.content.push(newProduct)
-
-    setFormData({ name: "", description: "", price: "", initialStock: "", category: "" })
-    setIsAddDialogOpen(false)
-    loadProducts()
-
-    toast.success("Producto agregado correctamente")
   }
 
   const handleEditProduct = async () => {
@@ -250,39 +123,38 @@ export default function InventoryManagement() {
       return
     }
 
-    const updatedProduct: Product = {
-      ...editingProduct,
-      name: formData.name,
-      description: formData.description,
-      price: Number.parseFloat(formData.price),
-      initialStock: Number.parseInt(formData.initialStock),
-      category: formData.category,
+    try {
+      await productService.updateProduct({
+        id: editingProduct.id,
+        name: formData.name,
+        description: formData.description,
+        price: Number.parseFloat(formData.price),
+        initialStock: Number.parseInt(formData.initialStock),
+        stock: editingProduct.stock, // Mantener el stock actual
+        category: formData.category,
+      })
+    
+      setFormData({ name: "", description: "", price: "", initialStock: "", category: "" })
+      setIsEditDialogOpen(false)
+      setEditingProduct(null)
+      loadProducts()
+
+      toast.success("Producto actualizado correctamente")
+    } catch (error) {
+      toast.error("No se pudo actualizar el producto")
     }
-
-    // Simular llamada al backend
-    const index = mockData.content.findIndex((p) => p.id === editingProduct.id)
-    if (index !== -1) {
-      mockData.content[index] = updatedProduct
-    }
-
-    setFormData({ name: "", description: "", price: "", initialStock: "", category: "" })
-    setIsEditDialogOpen(false)
-    setEditingProduct(null)
-    loadProducts()
-
-    toast.success("Producto actualizado correctamente")
   }
 
   const handleDeleteProduct = async (productId: string) => {
-    // Simular llamada al backend
-    const index = mockData.content.findIndex((p) => p.id === productId)
-    if (index !== -1) {
-      mockData.content.splice(index, 1)
+    try {
+      await productService.deleteProduct(productId)
+      loadProducts()
+      toast.success("Producto eliminado correctamente")
+    } catch (error) {
+      toast.error("No se pudo eliminar el producto")
     }
 
-    loadProducts()
-
-    toast.success("Producto eliminado correctamente")
+    
   }
 
   const openEditDialog = (product: Product) => {
@@ -298,7 +170,7 @@ export default function InventoryManagement() {
   }
 
   const getCategoryLabel = (category: string) => {
-    return CATEGORIES.find((cat) => cat.value === category)?.label || category
+    return PRODUCT_CATEGORIES.find((cat) => cat.value === category)?.label || category
   }
 
   const getStockStatus = (stock: number) => {
@@ -322,6 +194,11 @@ export default function InventoryManagement() {
     setSelectedCategories([])
     setMinPrice("")
     setMaxPrice("")
+    setCurrentPage(0)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
   }
 
   return (
@@ -372,7 +249,7 @@ export default function InventoryManagement() {
                     <SelectValue placeholder="Selecciona una categoría" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((category) => (
+                    {PRODUCT_CATEGORIES.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
                       </SelectItem>
@@ -420,7 +297,9 @@ export default function InventoryManagement() {
             <Package className="h-5 w-5" />
             Productos en Inventario
           </CardTitle>
-          <CardDescription>Total de productos: {totalElements}</CardDescription>
+          <CardDescription>
+            Total de productos: {totalElements} | Página {currentPage + 1} de {totalPages}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4 mb-6">
@@ -476,7 +355,7 @@ export default function InventoryManagement() {
             <div className="space-y-2">
               <Label className="text-sm font-medium">Categorías:</Label>
               <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((category) => (
+                {PRODUCT_CATEGORIES.map((category) => (
                   <div key={category.value} className="flex items-center space-x-2">
                     <input
                       type="checkbox"
@@ -494,7 +373,7 @@ export default function InventoryManagement() {
               {selectedCategories.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {selectedCategories.map((categoryValue) => {
-                    const category = CATEGORIES.find((cat) => cat.value === categoryValue)
+                    const category = PRODUCT_CATEGORIES.find((cat) => cat.value === categoryValue)
                     return (
                       <Badge
                         key={categoryValue}
@@ -594,6 +473,36 @@ export default function InventoryManagement() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Mostrando {products.length} de {totalElements} productos
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                >
+                  Anterior
+                </Button>
+                <span className="flex items-center px-3 text-sm">
+                  {currentPage + 1} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages - 1}
+                >
+                  Siguiente
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -633,7 +542,7 @@ export default function InventoryManagement() {
                   <SelectValue placeholder="Selecciona una categoría" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((category) => (
+                  {PRODUCT_CATEGORIES.map((category) => (
                     <SelectItem key={category.value} value={category.value}>
                       {category.label}
                     </SelectItem>
