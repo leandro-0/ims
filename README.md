@@ -18,6 +18,10 @@
 - [Documentación de Requisitos](docs/requirements/README.md)
 - [Guía de Pruebas](docs/tests-docs/README.md)
 
+### Monitoreo y Mantenimiento
+
+- [Mantenimiento y Actualizaciones](docs/maintenance/README.md)
+
 ### Gestión de Calidad
 
 - [Indicadores de Calidad]()
