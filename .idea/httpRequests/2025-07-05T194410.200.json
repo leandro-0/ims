@@ -1,0 +1,119 @@
+{
+  "content": [
+    {
+      "id": "e0ab8b80-3416-4b07-85a9-9caae6182539",
+      "name": "Impresora Garay, Nava y Armenta Asociados",
+      "description": "Totam voluptatem ad perspiciatis voluptas animi quas maxime rerum enim doloremque nam molestias corporis illum dolor pariatur itaque iure dolor repellat est doloribus sequi ipsa saepe totam ducimus.",
+      "price": 1207.27,
+      "initialStock": 87,
+      "stock": 72,
+      "category": "ELECTRONICS"
+    },
+    {
+      "id": "ea543fe3-9db5-4735-9c30-c347287d2ab2",
+      "name": "Monitor 29\"",
+      "description": "Soluta sit explicabo minus omnis ipsum porro inventore itaque possimus quod vero omnis alias accusamus totam maxime earum laborum natus consequatur magni mollitia accusamus vel.",
+      "price": 1131.72,
+      "initialStock": 2,
+      "stock": 2,
+      "category": "ELECTRONICS"
+    },
+    {
+      "id": "9832f75e-3258-4895-9e3a-f0a393f2c0fe",
+      "name": "Peluche guinea pig",
+      "description": "Pariatur esse totam repellendus voluptatem natus omnis quis nobis porro assumenda ipsa recusandae ullam itaque similique quo magni quas dolor dolorum soluta non repudiandae ab.",
+      "price": 138.23,
+      "initialStock": 75,
+      "stock": 11,
+      "category": "TOYS"
+    },
+    {
+      "id": "cd2d30e0-bbda-48ba-91c2-4804b1095c75",
+      "name": "Especias Orégano",
+      "description": "Nam saepe ea molestias voluptas itaque similique quasi adipisci iure aperiam recusandae ab cumque ex minus culpa exercitationem accusantium laborum reprehenderit quidem ab.",
+      "price": 23.39,
+      "initialStock": 53,
+      "stock": 12,
+      "category": "FOOD"
+    },
+    {
+      "id": "f7d7ecab-11b3-4700-8f71-09476c7f76c9",
+      "name": "Coche de Carreras",
+      "description": "Asperiores ratione exercitationem autem totam temporibus quo explicabo ea atque laboriosam maxime consectetur ut atque quod.",
+      "price": 145.94,
+      "initialStock": 51,
+      "stock": 7,
+      "category": "TOYS"
+    },
+    {
+      "id": "e3bf31ce-a04d-4c7e-a792-592c5d799eec",
+      "name": "Frutos Secos Avellanas",
+      "description": "Quibusdam impedit suscipit similique magni harum laboriosam atque eos debitis.",
+      "price": 20.64,
+      "initialStock": 45,
+      "stock": 2,
+      "category": "FOOD"
+    },
+    {
+      "id": "e04f0b2e-9638-4d25-8c96-7ef9a0ebba26",
+      "name": "Mesa de Trabajo",
+      "description": "Dolor quasi quia eveniet sunt aspernatur eum nostrum modi earum nemo aliquam ipsum amet exercitationem saepe blanditiis aliquam sit maiores inventore ut.",
+      "price": 690.27,
+      "initialStock": 33,
+      "stock": 11,
+      "category": "FURNITURE"
+    },
+    {
+      "id": "bb5eefb9-4fee-4709-9511-4892b017d189",
+      "name": "Suéter pink",
+      "description": "Explicabo asperiores fugit ut eius ipsum ratione vel ut adipisci similique at amet.",
+      "price": 39.19,
+      "initialStock": 93,
+      "stock": 18,
+      "category": "CLOTHING"
+    },
+    {
+      "id": "fd611ae6-9a1a-4d61-bfa5-3fea2a94e2bb",
+      "name": "Construcción Bloques",
+      "description": "Harum ducimus beatae soluta voluptas nemo tenetur nisi facilis qui culpa tempore nesciunt labore tempora quod sequi velit repudiandae.",
+      "price": 42.86,
+      "initialStock": 94,
+      "stock": 50,
+      "category": "TOYS"
+    },
+    {
+      "id": "3f561441-56cb-4678-8677-7db8a63c3ea3",
+      "name": "Cama Individual",
+      "description": "Cumque ratione officia perferendis culpa dolor sunt cupiditate libero voluptatem adipisci laborum at dolorum quisquam officiis repellat adipisci beatae tenetur architecto dolore nam dolores deleniti.",
+      "price": 388.93,
+      "initialStock": 77,
+      "stock": 15,
+      "category": "FURNITURE"
+    }
+  ],
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 10,
+    "sort": {
+      "empty": true,
+      "sorted": false,
+      "unsorted": true
+    },
+    "offset": 0,
+    "paged": true,
+    "unpaged": false
+  },
+  "last": false,
+  "totalElements": 50,
+  "totalPages": 5,
+  "first": true,
+  "size": 10,
+  "number": 0,
+  "sort": {
+    "empty": true,
+    "sorted": false,
+    "unsorted": true
+  },
+  "numberOfElements": 10,
+  "empty": false
+}
