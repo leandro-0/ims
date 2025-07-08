@@ -61,7 +61,7 @@ export interface ProductFilters {
 }
 
 // Configuración base de la API
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1/products"
 
 class ProductService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -130,7 +130,7 @@ class ProductService {
     }
 
     const queryString = params.toString()
-    const endpoint = `/v1/products/search${queryString ? `?${queryString}` : ""}`
+    const endpoint = `/search${queryString ? `?${queryString}` : ""}`
 
     return this.request<ProductResponse>(endpoint)
   }
@@ -149,7 +149,7 @@ class ProductService {
       category: product.category,
     }
 
-    return this.request<Product>("/v1/products", {
+    return this.request<Product>("", {
       method: "POST",
       body: JSON.stringify(productData),
     })
@@ -159,7 +159,7 @@ class ProductService {
    * Actualiza un producto existente
    */
   async updateProduct(product: UpdateProductRequest): Promise<Product> {
-    return this.request<Product>(`/v1/products/${product.id}`, {
+    return this.request<Product>(`/${product.id}`, {
       method: "PUT",
       body: JSON.stringify(product),
     })
@@ -169,7 +169,7 @@ class ProductService {
    * Elimina un producto
    */
   async deleteProduct(productId: string): Promise<void> {
-    return this.request<void>(`/v1/products/${productId}`, {
+    return this.request<void>(`/${productId}`, {
       method: "DELETE",
     })
   }
@@ -178,14 +178,14 @@ class ProductService {
    * Obtiene un producto por ID
    */
   async getProductById(productId: string): Promise<Product> {
-    return this.request<Product>(`/v1/products/${productId}`)
+    return this.request<Product>(`/${productId}`)
   }
 
   /**
    * Actualiza solo el stock de un producto
    */
   async updateProductStock(productId: string, newStock: number): Promise<Product> {
-    return this.request<Product>(`/v1/products/${productId}/stock`, {
+    return this.request<Product>(`/${productId}/stock`, {
       method: "PATCH",
       body: JSON.stringify({ stock: newStock }),
     })
@@ -195,7 +195,7 @@ class ProductService {
    * Obtiene todas las categorías disponibles
    */
   async getCategories(): Promise<string[]> {
-    return this.request<string[]>("/v1/products/categories")
+    return this.request<string[]>("/categories")
   }
 
   /**
@@ -218,7 +218,7 @@ class ProductService {
     }
 
     const queryString = params.toString()
-    const endpoint = `/v1/products/export${queryString ? `?${queryString}` : ""}`
+    const endpoint = `/export${queryString ? `?${queryString}` : ""}`
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
