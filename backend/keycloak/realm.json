@@ -732,9 +732,12 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/*"
+        "http://localhost:3000/api/auth/callback/*",
+        "http://localhost:3000/api/auth/callback/keycloak-pkce",
+        "http://localhost:3000/*"
       ],
       "webOrigins": [
+        "http://localhost:3000",
         "/*"
       ],
       "notBefore": 0,
@@ -753,7 +756,8 @@
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
         "oauth2.device.authorization.grant.enabled": "false",
-        "backchannel.logout.revoke.offline.tokens": "false"
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "pkce.code.challenge.method": "S256"
       },
       "authenticationFlowBindingOverrides": {},
       "fullScopeAllowed": true,

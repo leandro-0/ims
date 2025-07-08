@@ -1,3 +1,5 @@
+import { getSession, signOut } from 'next-auth/react'
+
 // Tipos para las peticiones y respuestas
 export interface Product {
   id: string
@@ -66,7 +68,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/a
 class ProductService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`
-
+    const session = await getSession()
     const config: RequestInit = {
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +76,10 @@ class ProductService {
       },
       ...options,
     }
-
+    
+    if (config.headers && session?.accessToken) {
+      (config.headers as Record<string, string>)["Authorization"] = `Bearer ${session.accessToken}`
+    }
     try {
       const response = await fetch(url, config)
 
