@@ -76,7 +76,7 @@ class ProductService {
       },
       ...options,
     }
-    
+
     if (config.headers && session?.accessToken) {
       (config.headers as Record<string, string>)["Authorization"] = `Bearer ${session.accessToken}`
     }
@@ -88,6 +88,7 @@ class ProductService {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
+      if (response.status === 204) return;
       return await response.json()
     } catch (error) {
       console.error("API request failed:", error)
@@ -255,9 +256,8 @@ export const PRODUCT_CATEGORIES = [
   { value: "FURNITURE", label: "Muebles" },
   { value: "ELECTRONICS", label: "Electrónicos" },
   { value: "CLOTHING", label: "Ropa" },
-  { value: "BOOKS", label: "Libros" },
-  { value: "SPORTS", label: "Deportes" },
-  { value: "HOME", label: "Hogar" },
+  { value: "FOOD", label: "Comida" },
+  { value: "TOYS", label: "Juguetes" },
 ] as const
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]["value"]
