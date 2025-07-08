@@ -58,7 +58,7 @@ public class ProductController {
             UUID productId = UUID.fromString(id);
             Optional<Product> existingProduct = productService.getProductById(productId);
             if (existingProduct.isPresent()) {
-                Product productToUpdate = existingProduct.get();
+                Product productToUpdate = ProductMapper.INSTANCE.toEntity(product);
                 productToUpdate.setId(productId);
                 Product updatedProduct = productService.saveProduct(productToUpdate);
                 return ResponseEntity.ok(ProductMapper.INSTANCE.toDto(updatedProduct));
