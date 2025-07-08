@@ -6,7 +6,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import lombok.RequiredArgsConstructor;
 
 import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.models.Product;
@@ -17,13 +16,14 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.*;
 import java.util.function.Consumer;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
-@RequiredArgsConstructor
 public class ProductStepDefinitions {
 
     @LocalServerPort
@@ -31,12 +31,18 @@ public class ProductStepDefinitions {
 
     private TestRestTemplate restTemplate = new TestRestTemplate();
     private ObjectMapper objectMapper = new ObjectMapper();
+
     private final ProductService productService;
 
     private ResponseEntity<String> lastResponse;
     private List<Product> createdProducts = new ArrayList<>();
     private Product lastCreatedProduct;
     private String baseUrl;
+    private String currentToken;
+
+    public ProductStepDefinitions(ProductService productService) {
+        this.productService = productService;
+    }
 
     // region Helpers methods
     private void setIfNotEmpty(Map<String, String> data, String key, Consumer<String> setter) {
@@ -111,7 +117,9 @@ public class ProductStepDefinitions {
         addFilterParam(queryParams, filters, "minPrice", "minPrice");
         addFilterParam(queryParams, filters, "maxPrice", "maxPrice");
         
-        return queryParams.isEmpty() ? baseUrl : baseUrl + "?" + String.join("&", queryParams);
+
+        String filterEndpoint = baseUrl + "/search";
+        return queryParams.isEmpty() ? filterEndpoint : filterEndpoint + "?" + String.join("&", queryParams);
     }
 
     private void addFilterParam(List<String> queryParams, Map<String, String> filters, String filterKey, String paramName) {
@@ -165,6 +173,7 @@ public class ProductStepDefinitions {
 
     @Given("the following products exist:")
     public void theFollowingProductsExist(DataTable dataTable) {
+        IAmAnAuthenticatedUserWithCredentials("admin@example.com", "admin1");
         List<Map<String, String>> productDataList = dataTable.asMaps();
         
         for (Map<String, String> productData : productDataList) {
@@ -176,10 +185,16 @@ public class ProductStepDefinitions {
                 checkProductResponse(response, true);
             }
         }
+
+        IAmAnAnonymousUser();
     }
 
     @Given("a product exists with the following details:")
     public void aProductExistsWithTheFollowingDetails(DataTable dataTable) {
+        boolean initiallyAuthenticated = currentToken != null;
+        if (!initiallyAuthenticated) {
+            IAmAnAuthenticatedUserWithCredentials("admin@example.com", "admin1");
+        }
         Map<String, String> productData = dataTable.asMap();
         Product product = createProductFromData(productData);
         
@@ -189,6 +204,9 @@ public class ProductStepDefinitions {
         if (response.getStatusCode().is2xxSuccessful()) {
             lastCreatedProduct = checkProductResponse(response, true);
         }
+
+        if (!initiallyAuthenticated)
+            IAmAnAnonymousUser();
     }
 
     @Given("{int} products exist in the system")
@@ -210,30 +228,30 @@ public class ProductStepDefinitions {
 
     @When("I retrieve all products")
     public void iRetrieveAllProducts() {
-        lastResponse = restTemplate.getForEntity(baseUrl, String.class);
+        lastResponse = restTemplate.getForEntity(baseUrl + "/search", String.class);
     }
 
     @When("I filter products by name {string}")
     public void iFilterProductsByName(String name) {
-        String url = baseUrl + "?name=" + name;
+        String url = baseUrl + "/search" + "?name=" + name;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I filter products by category {string}")
     public void iFilterProductsByCategory(String category) {
-        String url = baseUrl + "?categories=" + category;
+        String url = baseUrl + "/search" + "?categories=" + category;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I filter products with price range from {double} to {double}")
     public void iFilterProductsWithPriceRangeFromTo(double minPrice, double maxPrice) {
-        String url = baseUrl + "?minPrice=" + minPrice + "&maxPrice=" + maxPrice;
+        String url = baseUrl + "/search" + "?minPrice=" + minPrice + "&maxPrice=" + maxPrice;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I retrieve products with page {int} and size {int}")
     public void iRetrieveProductsWithPageAndSize(int page, int size) {
-        String url = baseUrl + "?page=" + page + "&size=" + size;
+        String url = baseUrl + "/search" + "?page=" + page + "&size=" + size;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
@@ -249,13 +267,13 @@ public class ProductStepDefinitions {
         if (lastCreatedProduct == null) {
             throw new IllegalStateException("No product has been created yet to retrieve.");
         }
-        String url = baseUrl + "/" + lastCreatedProduct.getId();
+        String url = baseUrl + "/" + lastCreatedProduct.getId() + "/details";
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I retrieve a product with a non-existent ID")
     public void iRetrieveAProductWithANonExistentId() {
-        String url = baseUrl + "/" + UUID.randomUUID().toString();
+        String url = baseUrl + "/" + UUID.randomUUID().toString() + "/details";
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
@@ -358,6 +376,40 @@ public class ProductStepDefinitions {
             Assertions.assertEquals(lastCreatedProduct.getPrice(), retrievedProduct.getPrice());
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse response", e);
+        }
+    }
+
+    @Given("I am an anonymous user")
+    public void IAmAnAnonymousUser() {
+        currentToken = null;
+        restTemplate.getRestTemplate().getInterceptors().clear();
+    }
+
+    @Given("I am an authenticated user with credentials {string} and {string}")
+    public void IAmAnAuthenticatedUserWithCredentials(String username, String password) {
+        if (currentToken != null)
+            return;
+        
+        String authUrl = "http://localhost:7080/realms/ims-realm/protocol/openid-connect/token";
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "password");
+        body.add("username", username);
+        body.add("password", password);
+        body.add("client_id", "ims");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(authUrl, request, Map.class);
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            currentToken = (String) response.getBody().get("access_token");
+            restTemplate.getRestTemplate().getInterceptors().add((request1, body1, execution) -> {
+                request1.getHeaders().setBearerAuth(currentToken);
+                return execution.execute(request1, body1);
+            });
+        } else {
+            throw new RuntimeException("Failed to authenticate user");
         }
     }
 }
