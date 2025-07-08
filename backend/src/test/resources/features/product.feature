@@ -191,8 +191,7 @@ Feature: Product Management
     And all products should have price between 100 and 200
 
   Scenario: Retrieve a specific product by ID
-    Given I am an authenticated user with credentials "admin@example.com" and "admin1"
-    And a product exists with the following details:
+    Given a product exists with the following details:
       | name         | Test Product     |
       | description  | Test Description |
       | price        |            99.99 |
