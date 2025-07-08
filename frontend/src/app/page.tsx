@@ -30,9 +30,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
-
+import { Navbar } from "@/components/navbar"
 import {
-  productService,
+   productService,
   handleApiError,
   PRODUCT_CATEGORIES,
   type Product,
@@ -70,11 +70,10 @@ export default function InventoryManagement() {
       const filters: ProductFilters = {
         page: currentPage,
         size: pageSize,
-        search: searchTerm || undefined,
+        name: searchTerm || undefined,
         categories: selectedCategories.length > 0 ? selectedCategories : undefined,
         minPrice: minPrice ? Number.parseFloat(minPrice) : undefined,
-        maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined,
-        sort: "name,asc", // Ordenar por nombre ascendente
+        maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined
       }
 
       const response = await productService.getProducts(filters)
@@ -200,17 +199,27 @@ export default function InventoryManagement() {
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
   }
-
+  const styles = `
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+`
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Inventario</h1>
+    <div className="min-h-screen bg-gray-50">
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+      <Navbar />
+      <div className="container mx-auto p-4 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Gestión de Inventario</h1>
           <p className="text-muted-foreground">Administra tu inventario de productos de manera eficiente</p>
-        </div>
+          </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Agregar Producto
             </Button>
@@ -303,9 +312,10 @@ export default function InventoryManagement() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4 mb-6">
-            {/* Primera fila: Búsqueda y botón limpiar */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
+            {/* Filtros principales - Responsive */}
+            <div className="flex flex-col space-y-4">
+              {/* Primera fila: Búsqueda */}
+              <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar productos..."
@@ -314,71 +324,88 @@ export default function InventoryManagement() {
                   className="pl-8"
                 />
               </div>
-              <Button variant="outline" onClick={clearAllFilters} className="whitespace-nowrap bg-transparent">
-                Limpiar Filtros
-              </Button>
             </div>
 
-            {/* Segunda fila: Filtros de precio */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex gap-2 items-center">
-                <Label htmlFor="min-price" className="whitespace-nowrap">
-                  Precio mín:
-                </Label>
-                <Input
-                  id="min-price"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-24"
-                />
+            {/* Segunda fila: Precios y botón limpiar */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex gap-3 flex-1">
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="min-price" className="text-xs text-muted-foreground">
+                    Precio mínimo
+                  </Label>
+                  <Input
+                    id="min-price"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="text-sm"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="max-price" className="text-xs text-muted-foreground">
+                    Precio máximo
+                  </Label>
+                  <Input
+                    id="max-price"
+                    type="number"
+                    step="0.01"
+                    placeholder="999.99"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="text-sm"
+                  />
               </div>
-              <div className="flex gap-2 items-center">
-                <Label htmlFor="max-price" className="whitespace-nowrap">
-                  Precio máx:
-                </Label>
-                <Input
-                  id="max-price"
-                  type="number"
-                  step="0.01"
-                  placeholder="999.99"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-24"
-                />
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={clearAllFilters}
+                  className="w-full sm:w-auto whitespace-nowrap bg-transparent"
+                >
+                  Limpiar Filtros
+                </Button>
               </div>
             </div>
+          </div>
+          
+            {/* Fila de categorías */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center w-full sm:w-auto">
+                <Label className="text-sm font-medium whitespace-nowrap">Categorías:</Label>
+                <Select
+                  onValueChange={(value) => {
+                    if (value && !selectedCategories.includes(value)) {
+                      setSelectedCategories((prev) => [...prev, value])
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Agregar categoría" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRODUCT_CATEGORIES.filter((category) => !selectedCategories.includes(category.value)).map(
+                      (category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Tercera fila: Filtros de categorías */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Categorías:</Label>
-              <div className="flex flex-wrap gap-2">
-                {PRODUCT_CATEGORIES.map((category) => (
-                  <div key={category.value} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id={`category-${category.value}`}
-                      checked={selectedCategories.includes(category.value)}
-                      onChange={() => handleCategoryToggle(category.value)}
-                      className="rounded border-gray-300"
-                    />
-                    <Label htmlFor={`category-${category.value}`} className="text-sm cursor-pointer">
-                      {category.label}
-                    </Label>
-                  </div>
-                ))}
+              {/* Categorías seleccionadas */}
               </div>
               {selectedCategories.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                   {selectedCategories.map((categoryValue) => {
                     const category = PRODUCT_CATEGORIES.find((cat) => cat.value === categoryValue)
                     return (
                       <Badge
                         key={categoryValue}
                         variant="secondary"
-                        className="cursor-pointer"
+                        className="cursor-pointer hover:bg-secondary/80"
                         onClick={() => handleCategoryToggle(categoryValue)}
                       >
                         {category?.label} ×
@@ -387,19 +414,18 @@ export default function InventoryManagement() {
                   })}
                 </div>
               )}
-            </div>
           </div>
 
-          <div className="rounded-md border">
+           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Producto</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Precio</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead className="min-w-[250px] max-w-xs">Producto</TableHead>
+                    <TableHead className="min-w-[100px]">Categoría</TableHead>
+                    <TableHead className="min-w-[80px]">Precio</TableHead>
+                    <TableHead className="min-w-[60px]">Stock</TableHead>
+                    <TableHead className="min-w-[80px]">Estado</TableHead>
+                    <TableHead className="text-right min-w-[120px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -421,10 +447,15 @@ export default function InventoryManagement() {
                     return (
                       <TableRow key={product.id}>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-sm text-muted-foreground">{product.description}</div>
-                          </div>
+                          <div className="max-w-xs">
+                              <div className="font-medium truncate">{product.name}</div>
+                              <div
+                                className="text-sm text-muted-foreground line-clamp-2 leading-tight"
+                                title={product.description}
+                              >
+                                {product.description}
+                              </div>
+                            </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">{getCategoryLabel(product.category)}</Badge>
@@ -476,7 +507,7 @@ export default function InventoryManagement() {
           
           {/* Paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
               <div className="text-sm text-muted-foreground">
                 Mostrando {products.length} de {totalElements} productos
               </div>
@@ -583,5 +614,6 @@ export default function InventoryManagement() {
         </DialogContent>
       </Dialog>
     </div>
+  </div>
   )
 }
