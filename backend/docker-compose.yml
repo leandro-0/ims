@@ -7,6 +7,10 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./.env
+    ports:
+      - ${IMS_BACKEND_PORT:-8080}:8080
+    volumes:
+      - ./.env:/app/.env
     depends_on:
       - postgres
     profiles:
