@@ -1,19 +1,17 @@
 "use client"
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Key, LogIn, Package } from 'lucide-react'
+import { Key, LogIn } from 'lucide-react'
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  
+
   const { login } = useAuth()
-  const router = useRouter()
 
   const handleLogin = async () => {
     setError('')
@@ -42,7 +40,7 @@ export function LoginForm() {
             Accede al sistema de inventario con Keycloak
           </CardDescription>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {error && (
             <Alert variant="destructive">
@@ -50,9 +48,9 @@ export function LoginForm() {
             </Alert>
           )}
         </CardContent>
-        
+
         <CardFooter>
-          <Button 
+          <Button
             onClick={handleLogin}
             className="w-full"
             disabled={isLoading}
