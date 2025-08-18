@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,9 +31,8 @@ import {
 import IMSPage from "@/components/ims-page"
 import ProductForm from "@/components/products/product-form"
 import ProductsTable from "@/components/products/products-table"
-import { Badge } from '@/components/ui/badge';
 import { AuthContext } from "@/context/AuthContext"
-import DebouncedInput from "@/components/debounced-input"
+import DebouncedInput, { DebouncedInputRef } from "@/components/debounced-input"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -48,6 +47,7 @@ export default function ProductsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [minPrice, setMinPrice] = useState<string>("")
   const [maxPrice, setMaxPrice] = useState<string>("")
+  const searchInputRef = useRef<DebouncedInputRef>(null)
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -110,6 +110,7 @@ export default function ProductsPage() {
     setMinPrice("")
     setMaxPrice("")
     setCurrentPage(0)
+    searchInputRef.current?.clear()
   }
 
   const handleCreateProduct = async (productData: CreateProductRequest) => {
@@ -168,9 +169,9 @@ export default function ProductsPage() {
               <Label htmlFor="search" className="mb-2">Buscar por nombre</Label>
               <div className="flex gap-2">
                 <DebouncedInput
+                  ref={searchInputRef}
                   id="search"
                   placeholder="Nombre del producto..."
-                  // value={searchTerm}
                   onDebounce={(value) => {
                     setCurrentPage(0)
                     setSearchTerm(value)
