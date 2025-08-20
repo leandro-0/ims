@@ -32,7 +32,7 @@ export function Navbar() {
     },
     {
       label: "Dashboard",
-      href: "/admin-dashboard",
+      href: "/dashboard",
       rolesNeeded: ["role_admin", "role_employee"],
     },
   ]
