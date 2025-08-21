@@ -41,6 +41,11 @@ public class Product {
     @Column(nullable = false)
     private Integer initialStock;
 
+    @NotNull(message = "Minimum stock cannot be null")
+    @Min(value = 0, message = "Minimum stock must be greater than or equal to zero")
+    @Column(nullable = false)
+    private Integer minimumStock;
+
     @NotNull(message = "Stock cannot be null")
     @Min(value = 0, message = "Stock must be greater than or equal to zero")
     @Column(nullable = false)

@@ -3,7 +3,7 @@ Feature: Product Management
   Background:
     Given the system is ready
     And the database is clean
-
+#TODO: Add minimumStock fields
   Scenario: Retrieve products with pagination
     Given I am an anonymous user
     And the following products exist:

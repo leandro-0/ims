@@ -20,6 +20,8 @@ public record ProductDTO(
 
         @NotNull(message = "Initial stock cannot be null") @Min(value = 0, message = "Initial stock must be greater than or equal to zero") Integer initialStock,
 
+        @NotNull(message = "Minimum stock cannot be null") @Min(value = 0, message = "Minimum stock must be greater than or equal to zero") Integer minimumStock,
+
         @NotNull(message = "Stock cannot be null") @Min(value = 0, message = "Stock must be greater than or equal to zero") Integer stock,
 
         @NotNull @ValidCategory String category) {

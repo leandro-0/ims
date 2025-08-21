@@ -59,6 +59,7 @@ public class ProductStepDefinitions {
         setIfNotEmpty(data, "description", product::setDescription);
         setIfNotEmpty(data, "price", value -> product.setPrice(Double.parseDouble(value)));
         setIfNotEmpty(data, "initialStock", value -> product.setInitialStock(Integer.parseInt(value)));
+        setIfNotEmpty(data, "minimumStock", value -> product.setMinimumStock(Integer.parseInt(value)));
         setIfNotEmpty(data, "stock", value -> product.setStock(Integer.parseInt(value)));
         setIfNotEmpty(data, "category", value -> {
             try {
@@ -76,6 +77,7 @@ public class ProductStepDefinitions {
         product.setName("Test Product");
         product.setDescription("Test Description");
         product.setPrice(99.99);
+        product.setMinimumStock(25);
         product.setInitialStock(50);
         product.setStock(50);
         product.setCategory(Category.ELECTRONICS);
