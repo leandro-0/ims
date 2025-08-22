@@ -16,7 +16,7 @@ public record StockMovementDTO(
 
         @NotNull(message = "Product name cannot be null") ProductNameDTO product,
 
-        @NotNull(message = "Stock quantity cannot be null") @Min(value = 1, message = "Stock movement quatity must be greater than or equal to one")Integer quantity,
+        @NotNull(message = "Stock quantity cannot be null") @Min(value = 0, message = "Stock movement quatity must be greater than or equal to zero")Integer quantity,
 
         @NotNull(message = "Action cannot be null") @ValidStockMovementAction String action){
 

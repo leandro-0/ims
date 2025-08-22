@@ -37,7 +37,7 @@ public class StockMovement {
     private ProductName product;
 
     @NotNull(message = "Stock quantity cannot be null")
-    @Min(value = 1, message = "Stock movement quatity must be greater than or equal to one")
+    @Min(value = 0, message = "Stock movement quatity must be greater than or equal to zero")
     @Column(nullable = false)
     private Integer quantity;
 
