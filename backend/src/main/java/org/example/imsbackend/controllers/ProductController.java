@@ -52,7 +52,7 @@ public class ProductController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('role_admin')")
+    @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product) {
         Product savedProduct = productService.saveProduct(ProductMapper.INSTANCE.toEntity(product));
         // Create stock movement for newly created product
@@ -67,7 +67,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('role_admin')")
+    @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") String id, @Valid @RequestBody ProductDTO product) {
         try {
             UUID productId = UUID.fromString(id);

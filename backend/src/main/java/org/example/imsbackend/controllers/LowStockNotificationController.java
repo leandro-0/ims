@@ -8,6 +8,7 @@ import org.example.imsbackend.models.LowStockNotification;
 import org.example.imsbackend.services.LowStockNotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -21,7 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class LowStockNotificationController {
     private final LowStockNotificationService lowStockNotificationService;
 
-    @GetMapping("/")
+    @GetMapping
+    @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
     public ResponseEntity<Page<LowStockNotificationDTO>> getAllLowStockNotifications(@ModelAttribute final LowStockNotificationFilter filter) {
         Page<LowStockNotification> lowStockNotifications = lowStockNotificationService.findAll(filter);
         return ResponseEntity.ok(lowStockNotifications.map(LowStockNotificationMapper.INSTANCE::toDto));
