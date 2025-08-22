@@ -7,8 +7,10 @@ import org.example.imsbackend.dto.ProductDTO;
 import org.example.imsbackend.dto.ProductFilter;
 import org.example.imsbackend.enums.StockMovementAction;
 import org.example.imsbackend.mappers.ProductMapper;
+import org.example.imsbackend.models.LowStockNotification;
 import org.example.imsbackend.models.Product;
 import org.example.imsbackend.models.StockMovement;
+import org.example.imsbackend.services.LowStockNotificationService;
 import org.example.imsbackend.services.ProductService;
 import org.example.imsbackend.services.StockMovementService;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,7 @@ import java.util.UUID;
 public class ProductController {
     private final ProductService productService;
     private final StockMovementService stockMovementService;
+    private final LowStockNotificationService lowStockNotificationService;
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductDTO>> getAllProductsWithFilter(@ModelAttribute ProductFilter filter) {
@@ -55,6 +58,11 @@ public class ProductController {
         // Create stock movement for newly created product
         StockMovement stockMovement = StockMovementService.calculateStockMovement(null, savedProduct, StockMovementAction.INSERTED);
         stockMovementService.save(stockMovement);
+        // Check if low stock notification is needed
+        LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(savedProduct);
+        if (lowStockNotification != null) {
+            lowStockNotificationService.save(lowStockNotification);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductMapper.INSTANCE.toDto(savedProduct));
     }
 
@@ -67,12 +75,17 @@ public class ProductController {
             if (existingProduct.isPresent()) {
                 Product productToUpdate = ProductMapper.INSTANCE.toEntity(product);
                 productToUpdate.setId(productId);
+                Product updatedProduct = productService.saveProduct(productToUpdate);
                 //Update stock movement if stock has changed
-                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), productToUpdate, StockMovementAction.UPDATED);
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), updatedProduct, StockMovementAction.UPDATED);
                 if(stockMovement != null) {
                     stockMovementService.save(stockMovement);
                 }
-                Product updatedProduct = productService.saveProduct(productToUpdate);
+                // Check if low stock notification is needed after update
+                LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(updatedProduct);
+                if (lowStockNotification != null) {
+                    lowStockNotificationService.save(lowStockNotification);
+                }
                 return ResponseEntity.ok(ProductMapper.INSTANCE.toDto(updatedProduct));
             }
             return ResponseEntity.notFound().build();
