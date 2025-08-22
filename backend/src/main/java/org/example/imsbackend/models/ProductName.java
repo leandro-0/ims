@@ -16,7 +16,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ProductName {
     @NotNull(message = "Product ID cannot be null")
-    private UUID id;
+    private UUID productId;
 
     @NotBlank(message = "Product name cannot be blank")
     @Column(nullable = false)
