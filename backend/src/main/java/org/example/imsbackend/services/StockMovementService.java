@@ -33,7 +33,7 @@ public class StockMovementService {
         return stockMovementRepository.findAllByOrderByDateDesc(pageable);
     }
 
-    public static StockMovement calculateStockMovement(Product oldProduct, Product newProduct, StockMovementAction action) {
+    public static StockMovement calculateStockMovement(Product oldProduct, Product newProduct, StockMovementAction action, String username) {
         if(action == StockMovementAction.UPDATED){
             if (Objects.equals(oldProduct.getStock(), newProduct.getStock())) {
                 return null; // No stock movement if stock hasn't changed on update
@@ -52,6 +52,7 @@ public class StockMovementService {
             stockMovement.setType(newProduct.getStock() > oldProduct.getStock() ? StockMovementType.INCOMING : StockMovementType.OUTGOING);
             stockMovement.setQuantity(Math.abs(newProduct.getStock() - oldProduct.getStock()));
         }
+        stockMovement.setUsername(username);
         stockMovement.setAction(action);
         return stockMovement;
     }

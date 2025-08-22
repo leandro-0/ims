@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,10 +54,11 @@ public class ProductController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
-    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product) {
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product, Authentication authentication) {
+        String username = authentication.getName();
         Product savedProduct = productService.saveProduct(ProductMapper.INSTANCE.toEntity(product));
         // Create stock movement for newly created product
-        StockMovement stockMovement = StockMovementService.calculateStockMovement(null, savedProduct, StockMovementAction.INSERTED);
+        StockMovement stockMovement = StockMovementService.calculateStockMovement(null, savedProduct, StockMovementAction.INSERTED, username);
         stockMovementService.save(stockMovement);
         // Check if low stock notification is needed
         LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(savedProduct);
@@ -68,15 +70,16 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
-    public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") String id, @Valid @RequestBody ProductDTO product) {
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") String id, @Valid @RequestBody ProductDTO product, Authentication authentication) {
         try {
+            String username = authentication.getName();
             UUID productId = UUID.fromString(id);
             Optional<Product> existingProduct = productService.getProductById(productId);
             if (existingProduct.isPresent()) {
                 Product productToUpdate = ProductMapper.INSTANCE.toEntity(product);
                 productToUpdate.setId(productId);
                 //Update stock movement if stock has changed
-                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), productToUpdate, StockMovementAction.UPDATED);
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), productToUpdate, StockMovementAction.UPDATED, username);
                 if(stockMovement != null) {
                     stockMovementService.save(stockMovement);
                 }
@@ -96,13 +99,14 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('role_admin')")
-    public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id, Authentication authentication) {
         try {
+            String username = authentication.getName();
             UUID productId = UUID.fromString(id);
             Optional<Product> product = productService.getProductById(productId);
             if (product.isPresent()) {
                 // Create stock movement for deleted product
-                StockMovement stockMovement = StockMovementService.calculateStockMovement(null, product.get(), StockMovementAction.DELETED);
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(null, product.get(), StockMovementAction.DELETED, username);
                 if (stockMovement != null) {
                     stockMovementService.save(stockMovement);
                 }
