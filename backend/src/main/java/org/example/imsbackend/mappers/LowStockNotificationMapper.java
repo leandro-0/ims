@@ -10,6 +10,6 @@ public interface LowStockNotificationMapper {
     LowStockNotificationMapper INSTANCE = Mappers.getMapper(LowStockNotificationMapper.class);
 
     LowStockNotificationDTO toDto(LowStockNotification lowStockNotification);
-    LowStockNotification toEntity(LowStockNotificationDTO lowStockNotificationDTO);
+//    LowStockNotification toEntity(LowStockNotificationDTO lowStockNotificationDTO);
     Iterable<LowStockNotificationDTO> toDto(Iterable<LowStockNotification> lowStockNotifications);
 }
