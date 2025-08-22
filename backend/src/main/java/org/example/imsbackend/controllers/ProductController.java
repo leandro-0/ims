@@ -5,9 +5,14 @@ import lombok.RequiredArgsConstructor;
 
 import org.example.imsbackend.dto.ProductDTO;
 import org.example.imsbackend.dto.ProductFilter;
+import org.example.imsbackend.enums.StockMovementAction;
 import org.example.imsbackend.mappers.ProductMapper;
+import org.example.imsbackend.models.LowStockNotification;
 import org.example.imsbackend.models.Product;
+import org.example.imsbackend.models.StockMovement;
+import org.example.imsbackend.services.LowStockNotificationService;
 import org.example.imsbackend.services.ProductService;
+import org.example.imsbackend.services.StockMovementService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +29,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final StockMovementService stockMovementService;
+    private final LowStockNotificationService lowStockNotificationService;
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductDTO>> getAllProductsWithFilter(@ModelAttribute ProductFilter filter) {
@@ -45,14 +52,22 @@ public class ProductController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('role_admin')")
+    @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product) {
         Product savedProduct = productService.saveProduct(ProductMapper.INSTANCE.toEntity(product));
+        // Create stock movement for newly created product
+        StockMovement stockMovement = StockMovementService.calculateStockMovement(null, savedProduct, StockMovementAction.INSERTED);
+        stockMovementService.save(stockMovement);
+        // Check if low stock notification is needed
+        LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(savedProduct);
+        if (lowStockNotification != null) {
+            lowStockNotificationService.save(lowStockNotification);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductMapper.INSTANCE.toDto(savedProduct));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('role_admin')")
+    @PreAuthorize("hasAnyRole('role_admin', 'role_employee')")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") String id, @Valid @RequestBody ProductDTO product) {
         try {
             UUID productId = UUID.fromString(id);
@@ -61,6 +76,16 @@ public class ProductController {
                 Product productToUpdate = ProductMapper.INSTANCE.toEntity(product);
                 productToUpdate.setId(productId);
                 Product updatedProduct = productService.saveProduct(productToUpdate);
+                //Update stock movement if stock has changed
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), updatedProduct, StockMovementAction.UPDATED);
+                if(stockMovement != null) {
+                    stockMovementService.save(stockMovement);
+                }
+                // Check if low stock notification is needed after update
+                LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(updatedProduct);
+                if (lowStockNotification != null) {
+                    lowStockNotificationService.save(lowStockNotification);
+                }
                 return ResponseEntity.ok(ProductMapper.INSTANCE.toDto(updatedProduct));
             }
             return ResponseEntity.notFound().build();
@@ -76,6 +101,11 @@ public class ProductController {
             UUID productId = UUID.fromString(id);
             Optional<Product> product = productService.getProductById(productId);
             if (product.isPresent()) {
+                // Create stock movement for deleted product
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(null, product.get(), StockMovementAction.DELETED);
+                if (stockMovement != null) {
+                    stockMovementService.save(stockMovement);
+                }
                 productService.deleteProduct(productId);
                 return ResponseEntity.noContent().build();
             }
