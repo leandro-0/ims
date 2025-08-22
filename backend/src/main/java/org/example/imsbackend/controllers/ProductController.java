@@ -75,12 +75,12 @@ public class ProductController {
             if (existingProduct.isPresent()) {
                 Product productToUpdate = ProductMapper.INSTANCE.toEntity(product);
                 productToUpdate.setId(productId);
-                Product updatedProduct = productService.saveProduct(productToUpdate);
                 //Update stock movement if stock has changed
-                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), updatedProduct, StockMovementAction.UPDATED);
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), productToUpdate, StockMovementAction.UPDATED);
                 if(stockMovement != null) {
                     stockMovementService.save(stockMovement);
                 }
+                Product updatedProduct = productService.saveProduct(productToUpdate);
                 // Check if low stock notification is needed after update
                 LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(updatedProduct);
                 if (lowStockNotification != null) {
