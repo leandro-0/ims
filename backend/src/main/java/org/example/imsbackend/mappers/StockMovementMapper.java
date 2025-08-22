@@ -9,7 +9,7 @@ import org.mapstruct.factory.Mappers;
 public interface StockMovementMapper {
     StockMovementMapper INSTANCE = Mappers.getMapper(StockMovementMapper.class);
 
-    StockMovement toStockMovement(StockMovementDTO stockMovementDTO);
+    StockMovement toEntity(StockMovementDTO stockMovementDTO);
     StockMovementDTO toDto(StockMovement stockMovement);
     Iterable<StockMovementDTO> toDto(Iterable<StockMovement> stockMovements);
 }
