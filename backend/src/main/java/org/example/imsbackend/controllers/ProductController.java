@@ -5,9 +5,12 @@ import lombok.RequiredArgsConstructor;
 
 import org.example.imsbackend.dto.ProductDTO;
 import org.example.imsbackend.dto.ProductFilter;
+import org.example.imsbackend.enums.StockMovementAction;
 import org.example.imsbackend.mappers.ProductMapper;
 import org.example.imsbackend.models.Product;
+import org.example.imsbackend.models.StockMovement;
 import org.example.imsbackend.services.ProductService;
+import org.example.imsbackend.services.StockMovementService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final StockMovementService stockMovementService;
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductDTO>> getAllProductsWithFilter(@ModelAttribute ProductFilter filter) {
@@ -48,6 +52,9 @@ public class ProductController {
     @PreAuthorize("hasRole('role_admin')")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product) {
         Product savedProduct = productService.saveProduct(ProductMapper.INSTANCE.toEntity(product));
+        // Create stock movement for newly created product
+        StockMovement stockMovement = StockMovementService.calculateStockMovement(null, savedProduct, StockMovementAction.INSERTED);
+        stockMovementService.save(stockMovement);
         return ResponseEntity.status(HttpStatus.CREATED).body(ProductMapper.INSTANCE.toDto(savedProduct));
     }
 
@@ -60,6 +67,11 @@ public class ProductController {
             if (existingProduct.isPresent()) {
                 Product productToUpdate = ProductMapper.INSTANCE.toEntity(product);
                 productToUpdate.setId(productId);
+                //Update stock movement if stock has changed
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(existingProduct.get(), productToUpdate, StockMovementAction.UPDATED);
+                if(stockMovement != null) {
+                    stockMovementService.save(stockMovement);
+                }
                 Product updatedProduct = productService.saveProduct(productToUpdate);
                 return ResponseEntity.ok(ProductMapper.INSTANCE.toDto(updatedProduct));
             }
@@ -76,6 +88,11 @@ public class ProductController {
             UUID productId = UUID.fromString(id);
             Optional<Product> product = productService.getProductById(productId);
             if (product.isPresent()) {
+                // Create stock movement for deleted product
+                StockMovement stockMovement = StockMovementService.calculateStockMovement(null, product.get(), StockMovementAction.DELETED);
+                if (stockMovement != null) {
+                    stockMovementService.save(stockMovement);
+                }
                 productService.deleteProduct(productId);
                 return ResponseEntity.noContent().build();
             }
