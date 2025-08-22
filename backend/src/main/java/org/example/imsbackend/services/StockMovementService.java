@@ -44,7 +44,7 @@ public class StockMovementService {
         stockMovement.setDate(LocalDateTime.now());
         if (action == StockMovementAction.DELETED){
             stockMovement.setType(StockMovementType.OUTGOING);
-            stockMovement.setQuantity(oldProduct.getStock());
+            stockMovement.setQuantity(newProduct.getStock());
         }else if(action == StockMovementAction.INSERTED) {
             stockMovement.setType(StockMovementType.INCOMING);
             stockMovement.setQuantity(newProduct.getStock());
