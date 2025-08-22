@@ -26,21 +26,22 @@ public class StockMovement {
     @Column(nullable = false)
     private LocalDateTime date;
 
-    @NotNull
+    @NotNull(message = "Type cannot be null")
     @Enumerated(EnumType.STRING)
     @ValidStockMovementType
     @Column(nullable = false)
     private StockMovementType type; // "IN" for stock in, "OUT" for stock out
 
     @Embedded
+    @NotNull(message = "Product name cannot be null")
     private ProductName product;
 
     @NotNull(message = "Stock quantity cannot be null")
-    @Min(value = 0, message = "Stock quatity must be greater than or equal to zero")
+    @Min(value = 1, message = "Stock movement quatity must be greater than or equal to one")
     @Column(nullable = false)
     private Integer quantity;
 
-    @NotNull
+    @NotNull(message = "Action cannot be null")
     @Enumerated(EnumType.STRING)
     @ValidStockMovementAction
     @Column(nullable = false)

@@ -1,7 +1,9 @@
 package org.example.imsbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.imsbackend.dto.StockMovementDTO;
 import org.example.imsbackend.dto.StockMovementFilter;
+import org.example.imsbackend.mappers.StockMovementMapper;
 import org.example.imsbackend.models.StockMovement;
 import org.example.imsbackend.services.StockMovementService;
 import org.springframework.data.domain.Page;
@@ -20,8 +22,8 @@ public class StockMovementController {
     private final StockMovementService stockMovementService;
 
     @GetMapping("/")
-    public ResponseEntity<Page<StockMovement>> getAllStockMovements(@ModelAttribute StockMovementFilter filter) {
+    public ResponseEntity<Page<StockMovementDTO>> getAllStockMovements(@ModelAttribute StockMovementFilter filter) {
         Page<StockMovement> stockMovements = stockMovementService.getAllStockMovements(filter);
-        return ResponseEntity.ok(stockMovements);
+        return ResponseEntity.ok(stockMovements.map(StockMovementMapper.INSTANCE::toDto));
     }
 }
