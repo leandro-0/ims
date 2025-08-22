@@ -3,11 +3,8 @@ package org.example.imsbackend.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.UUID;
 
 public record LowStockNotificationDTO(
-        UUID id,
-
         @NotNull(message = "Date cannot be null") String date,
 
         @NotNull(message = "Product name cannot be null") ProductNameDTO product,
