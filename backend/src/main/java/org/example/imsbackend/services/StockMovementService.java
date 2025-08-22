@@ -6,6 +6,7 @@ import org.example.imsbackend.dto.StockMovementFilter;
 import org.example.imsbackend.enums.StockMovementAction;
 import org.example.imsbackend.enums.StockMovementType;
 import org.example.imsbackend.models.Product;
+import org.example.imsbackend.models.ProductName;
 import org.example.imsbackend.models.StockMovement;
 import org.example.imsbackend.repositories.StockMovementRepository;
 import org.springframework.data.domain.Page;
@@ -39,7 +40,7 @@ public class StockMovementService {
             }
         }
         StockMovement stockMovement = new StockMovement();
-        stockMovement.setProduct(new StockMovement.ProductInfo(newProduct.getId(), newProduct.getName()));
+        stockMovement.setProduct(new ProductName(newProduct.getId(), newProduct.getName()));
         stockMovement.setDate(LocalDateTime.now());
         if (action == StockMovementAction.DELETED){
             stockMovement.setType(StockMovementType.OUTGOING);
