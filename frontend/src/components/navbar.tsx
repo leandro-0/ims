@@ -8,6 +8,7 @@ import { AppConfig } from "@/core/app-config"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { LowStockNotifications } from "@/components/notifications/low-stock-notifications"
 
 type MenuOption = {
   label: string
@@ -72,6 +73,9 @@ export function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {menuOptions.map((option, i) => getDesktopLink(i, option))}
+              {isAuthenticated && (
+                <LowStockNotifications className="mr-2" />
+              )}
               {!isAuthenticated && (
                 <Link href="/login" className={desktopLinkCns}>
                   Iniciar sesión
@@ -86,7 +90,10 @@ export function Navbar() {
           </div>
 
           {/* Mobile Button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            {isAuthenticated && (
+              <LowStockNotifications />
+            )}
             <Button
               variant="ghost"
               size="sm"

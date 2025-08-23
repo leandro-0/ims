@@ -29,7 +29,7 @@ export default function ProductTableRow({ product, openEditModal, setProductToDe
       </TableCell>
       <TableCell className="text-right">${product.price.toLocaleString()}</TableCell>
       <TableCell className="text-right">
-        <span className={product.stock <= (product.minimunStock ?? 0) ? "text-destructive font-semibold" : ""}>
+        <span className={product.stock <= (product.minimumStock ?? 0) ? "text-destructive font-semibold" : ""}>
           {product.stock}
         </span>
       </TableCell>

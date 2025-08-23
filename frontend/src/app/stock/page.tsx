@@ -1,7 +1,7 @@
 "use client"
 
 import IMSPage from "@/components/ims-page"
-import { StockMovement, StockMovementService } from "@/services/stock-service"
+import { StockMovement, stockMovementsService } from "@/services/stock-service"
 import { Blocks } from "lucide-react"
 import { toast } from "sonner"
 import { useCallback, useEffect, useState } from "react"
@@ -19,7 +19,10 @@ export default function StockPage() {
   const loadMovements = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await StockMovementService.getMovements()
+      const response = await stockMovementsService.getMovements({
+        page: currentPage,
+        size: pageSize,
+      })
       setMovements(response.content)
       setTotalPages(response.totalPages)
       setTotalElements(response.totalElements)
@@ -28,7 +31,6 @@ export default function StockPage() {
     } finally {
       setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, pageSize])
 
   useEffect(() => {

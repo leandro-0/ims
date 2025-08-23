@@ -1,4 +1,4 @@
-import BaseService from './base-service'
+import BaseService, { BaseResponse } from './base-service'
 
 export interface Product {
   id: string
@@ -7,37 +7,12 @@ export interface Product {
   price: number
   initialStock: number
   stock: number
-  minimunStock?: number
+  minimumStock?: number
   category: string
 }
 
-export interface ProductResponse {
+export interface ProductResponse extends BaseResponse {
   content: Product[]
-  pageable: {
-    pageNumber: number
-    pageSize: number
-    sort: {
-      empty: boolean
-      sorted: boolean
-      unsorted: boolean
-    }
-    offset: number
-    paged: boolean
-    unpaged: boolean
-  }
-  last: boolean
-  totalPages: number
-  totalElements: number
-  first: boolean
-  size: number
-  number: number
-  sort: {
-    empty: boolean
-    sorted: boolean
-    unsorted: boolean
-  }
-  numberOfElements: number
-  empty: boolean
 }
 
 export interface CreateProductRequest {
@@ -113,6 +88,7 @@ class ProductService extends BaseService {
       initialStock: product.initialStock,
       stock: product.initialStock,
       category: product.category,
+      minimumStock: product.minimumStock,
     }
 
     return this.request<Product>("/products", {

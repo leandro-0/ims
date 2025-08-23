@@ -5,6 +5,9 @@ import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { StompSessionProvider } from "react-stomp-hooks"
+import { AppConfig } from "@/core/app-config"
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -12,13 +15,17 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <SessionProvider>
-      <AuthProvider>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster />
-        </ThemeProvider>
-      </AuthProvider>
-    </SessionProvider>
+    <StompSessionProvider url={AppConfig.stompBaseUrl}>
+      <SessionProvider>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+            <TooltipProvider>
+              {children}
+              <Toaster />
+            </TooltipProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </SessionProvider>
+    </StompSessionProvider>
   );
 }

@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import TablePagination from "../table-pagination"
 import { StockMovement } from "@/services/stock-service"
 import { Badge } from "../ui/badge"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
 interface StockMovementsTableProps {
   movements: StockMovement[]
@@ -16,6 +17,19 @@ interface StockMovementsTableProps {
 }
 
 export default function StockMovementsTable(props: StockMovementsTableProps) {
+  const convertActionText = (action: string) => {
+    switch (action) {
+      case "UPDATED":
+        return "Actualización de stock"
+      case "DELETED":
+        return "Producto eliminado"
+      case "INSERTED":
+        return "Producto creado"
+      default:
+        return action
+    }
+  }
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
@@ -31,11 +45,10 @@ export default function StockMovementsTable(props: StockMovementsTableProps) {
               <TableRow>
                 <TableHead>Fecha</TableHead>
                 <TableHead>Tipo de movimiento</TableHead>
-                <TableHead>ID Producto</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead>Usuario accionante</TableHead>
                 <TableHead>Cantidad</TableHead>
-                <TableHead>Notas</TableHead>
+                <TableHead>Acci&oacute;n realizada</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -56,15 +69,24 @@ export default function StockMovementsTable(props: StockMovementsTableProps) {
                   <TableRow key={`mov-${i}`}>
                     <TableCell>{new Date(mov.date).toLocaleString()}</TableCell>
                     <TableCell>
-                      <Badge variant={mov.type === "in" ? "default" : "destructive"}>
-                        {mov.type === "in" ? "Entrada" : "Salida"}
+                      <Badge
+                        variant={mov.type === "INCOMING" ? "outline" : "destructive"}
+                        className={mov.type === "INCOMING" ? "bg-green-800 text-white" : ""}
+                      >
+                        {mov.type === "INCOMING" ? "Entrada" : "Salida"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{mov.product.id}</TableCell>
-                    <TableCell>{mov.product.name}</TableCell>
+                    <TableCell>
+                      <Tooltip>
+                        <TooltipTrigger>{mov.product.name}</TooltipTrigger>
+                        <TooltipContent>
+                          <span className="max-w-xs break-words">ID: {mov.product.productId}</span>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableCell>
                     <TableCell>{mov.username}</TableCell>
-                    <TableCell className="text-right">{mov.quantity}</TableCell>
-                    <TableCell>{mov.notes || "N/A"}</TableCell>
+                    <TableCell className="text-center">{mov.quantity}</TableCell>
+                    <TableCell>{convertActionText(mov.action)}</TableCell>
                   </TableRow>
                 ))
               )}

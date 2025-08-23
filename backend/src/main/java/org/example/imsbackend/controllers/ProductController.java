@@ -16,6 +16,8 @@ import org.example.imsbackend.services.StockMovementService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +33,7 @@ public class ProductController {
     private final ProductService productService;
     private final StockMovementService stockMovementService;
     private final LowStockNotificationService lowStockNotificationService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductDTO>> getAllProductsWithFilter(@ModelAttribute ProductFilter filter) {
@@ -85,6 +88,8 @@ public class ProductController {
                 LowStockNotification lowStockNotification = lowStockNotificationService.notificationFromProduct(updatedProduct);
                 if (lowStockNotification != null) {
                     lowStockNotificationService.save(lowStockNotification);
+
+                    messagingTemplate.convertAndSend("/topic/low-stock", "new");
                 }
                 return ResponseEntity.ok(ProductMapper.INSTANCE.toDto(updatedProduct));
             }

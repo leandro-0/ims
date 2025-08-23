@@ -41,7 +41,7 @@ export default function ProductForm({ product, onSubmit, onCancel }: ProductForm
         initialStock: product.initialStock.toString(),
         stock: product.stock.toString(),
         category: product.category,
-        minimumStock: product.minimunStock?.toString() || "0",
+        minimumStock: product.minimumStock?.toString() || "0",
       })
     }
   }, [product])
