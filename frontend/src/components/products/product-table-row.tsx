@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Edit, Trash2 } from "lucide-react"
+import { formatCurrency, formatNumber } from '../../lib/utils';
 import {
   type Product,
   PRODUCT_CATEGORIES,
@@ -27,10 +28,10 @@ export default function ProductTableRow({ product, openEditModal, setProductToDe
       <TableCell>
         <Badge variant="secondary">{getCategoryLabel(product.category)}</Badge>
       </TableCell>
-      <TableCell className="text-right">${product.price.toLocaleString()}</TableCell>
+      <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
       <TableCell className="text-right">
         <span className={product.stock <= (product.minimumStock ?? 0) ? "text-destructive font-semibold" : ""}>
-          {product.stock}
+          {formatNumber(product.stock)}
         </span>
       </TableCell>
       {hasAccessToActions && (
