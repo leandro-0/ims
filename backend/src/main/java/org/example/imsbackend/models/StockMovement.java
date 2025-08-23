@@ -2,7 +2,9 @@ package org.example.imsbackend.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.imsbackend.annotations.ValidStockMovementAction;
@@ -35,6 +37,11 @@ public class StockMovement {
     @Embedded
     @NotNull(message = "Product name cannot be null")
     private ProductName product;
+
+    @NotBlank(message = "Username cannot be blank")
+    @Size(max = 50, message = "Username must be at most 50 characters long")
+    @Column(nullable = false)
+    private String username;
 
     @NotNull(message = "Stock quantity cannot be null")
     @Min(value = 0, message = "Stock movement quatity must be greater than or equal to zero")
