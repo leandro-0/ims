@@ -1,4 +1,40 @@
 services:
+  traefik:
+    container_name: traefik-proxy
+    image: traefik:v3.1
+    restart: always
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.leandroj.tech`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.service=api@internal"
+    networks:
+      - ims-network
+    profiles:
+      - prod
+
   ims-backend:
     container_name: ims-backend
     restart: always
@@ -7,12 +43,23 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./.env
-    ports:
-      - ${IMS_BACKEND_PORT:-8080}:8080
+    expose:
+      - 8080
     volumes:
       - ./.env:/app/.env
     depends_on:
       - postgres
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.bento.leandroj.tech`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+      # WebSocket support
+      - "traefik.http.routers.backend.middlewares=websocket-headers@docker"
+      - "traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.middlewares.websocket-headers.headers.customrequestheaders.Upgrade=websocket"
     profiles:
       - prod
     networks:
@@ -50,31 +97,35 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
+      KC_PROXY_HEADERS: "xforwarded"
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
       KC_HEALTH_ENABLED: "true"
       KC_LOG_LEVEL: info
       KEYCLOAK_IMPORT: /opt/keycloak/data/import/realm.json
-    ports:
-      - "${KEYCLOAK_PORT:-7080}:${KEYCLOAK_PORT:-7080}"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://${KEYCLOAK_HOSTNAME:-localhost}:${KEYCLOAK_PORT:-7080}/health/ready",
-        ]
-      interval: 15s
-      timeout: 2s
-      retries: 15
+    expose:
+      - ${KEYCLOAK_PORT:-7080}
+    depends_on:
+      - traefik
     networks:
       - ims-network
     command:
-      ["start-dev", "--http-port", "${KEYCLOAK_PORT:-7080}", "--import-realm"]
+      [
+        "start-dev",
+        "--http-port=${KEYCLOAK_PORT:-7080}",
+        "--hostname-strict=false",
+        "--proxy-headers=xforwarded",
+        "--import-realm"
+      ]
     volumes:
       - ${KEYCLOAK_VOLUME_PATH}:/opt/keycloak/data
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`auth.bento.leandroj.tech`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=7080"
     profiles:
       - dev
       - prod
@@ -94,11 +145,18 @@ services:
       - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID}
       - KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER}
       - KEYCLOAK_ISSUER_SERVER=${KEYCLOAK_ISSUER_SERVER}
-    ports:
-      - ${IMS_FRONTEND_PORT:-3000}:3000
+    expose:
+      - 3000
     depends_on:
       - ims-backend
       - keycloak
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`bento.leandroj.tech`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     networks:
       - ims-network
     profiles:

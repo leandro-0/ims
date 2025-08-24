@@ -29,12 +29,6 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED=1
 
-ARG API_URL
-ENV NEXT_PUBLIC_API_URL=$API_URL
-
-ARG BASE_URL
-ENV NEXT_PUBLIC_BASE_URL=$BASE_URL
-
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
