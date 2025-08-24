@@ -14,10 +14,59 @@ jobs:
     steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.2.2
+        env:
+          TRAEFIK_USER: ${{ secrets.TRAEFIK_USER }}
+          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            echo "Connected to server"
+            cd /root
+
+            if [ ! -d "ims" ]; then
+              git clone https://github.com/leandro-0/ims.git ims
+            fi
+            cd ims/backend
+
+            if [ ! -f ".env" ]; then
+              TRAEFIK_HASH=$(echo "$TRAEFIK_PASSWORD" | openssl passwd -apr1 -stdin)
+
+              cat > .env <<-EOF
+              POSTGRES_HOST=${{vars.POSTGRES_HOST }}
+              POSTGRES_DB=${{ vars.POSTGRES_DB }}
+              POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+              POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+              POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
+              POSTGRES_URL=${{ secrets.POSTGRES_URL }}
+              KEYCLOAK_PORT=${{ vars.KEYCLOAK_PORT }}
+              KEYCLOAK_ADMIN_USER=${{ secrets.KEYCLOAK_ADMIN_USER }}
+              KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
+              KEYCLOAK_HOSTNAME=${{ vars.KEYCLOAK_HOSTNAME }}
+              KEYCLOAK_VOLUME_PATH=${{ vars.KEYCLOAK_VOLUME_PATH }}
+              KEYCLOAK_ISSUER_URI=${{ vars.KEYCLOAK_ISSUER_URI }}
+              KEYCLOAK_JWK_SET_URI=${{ vars.KEYCLOAK_JWK_SET_URI }}
+              KEYCLOAK_LOGIN_URI=${{ vars.KEYCLOAK_LOGIN_URI }}
+              IMS_SHOULD_POPULATE=${{ vars.IMS_SHOULD_POPULATE }}
+              AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+              AUTH_TRUST_HOST=${{ vars.AUTH_TRUST_HOST }}
+              NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+              NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }}
+              KEYCLOAK_CLIENT_ID=${{ vars.KEYCLOAK_CLIENT_ID }}
+              KEYCLOAK_ISSUER=${{ vars.KEYCLOAK_ISSUER }}
+              KEYCLOAK_ISSUER_SERVER=${{ vars.KEYCLOAK_ISSUER_SERVER }}
+              ACME_EMAIL=${{ secrets.ACME_EMAIL }}
+              TRAEFIK_DASHBOARD_CREDENTIALS=$TRAEFIK_USER:$TRAEFIK_HASH
+              EOF
+
+              echo ".env file created"
+            fi
+
+            git checkout main
+            git pull origin main
+
+            docker compose --profile prod up -d --build
+            docker image prune -f
+
+            echo "Deployment in production server completed."
