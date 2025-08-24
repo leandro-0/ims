@@ -1,0 +1,23 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches: [main, traefik]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    environment: production
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            echo "Connected to server"
