@@ -2,8 +2,11 @@ package org.example.imsbackend.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.imsbackend.dto.StatsData;
+import org.example.imsbackend.dto.StockMovementFilter;
 import org.example.imsbackend.dto.UsernameCount;
 import org.example.imsbackend.enums.StockMovementType;
+import org.example.imsbackend.models.Product;
+import org.springframework.data.domain.Page;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,11 @@ public class DashboardService {
         statsData.setMovementsLast24Hours(getStockMovementLast24Hours());
         statsData.setMovementsLast7Days(getStockMovementLast7Days());
         return statsData;
+    }
+
+    // products bellow min stock
+    public Page<Product> getProductsBelowMinStock(StockMovementFilter filter) {
+        return productService.productsBelowMinimumStock(filter);
     }
 
     //Summary

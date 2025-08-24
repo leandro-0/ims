@@ -2,6 +2,7 @@ package org.example.imsbackend.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.imsbackend.dto.ProductFilter;
+import org.example.imsbackend.dto.StockMovementFilter;
 import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.models.Product;
 import org.example.imsbackend.repositories.ProductRepository;
@@ -67,11 +68,6 @@ public class ProductService {
         productRepository.deleteAll();
     }
 
-    // Dashboard statistics methods can be added here as needed
-    public void dashboardStatistics() {
-        // Implementation for dashboard statistics
-    }
-
     public long countProducts() {
         return productRepository.count();
     }
@@ -88,13 +84,9 @@ public class ProductService {
                 .sum();
     }
 
-    public Page<Product> productsBelowMinimumStock(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<Product> productsBelowMinimumStock(StockMovementFilter filter) {
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize());
         return productRepository.findProductsBelowMinimumStock(pageable);
-    }
-
-    public long countProductsInCategory(String category) {
-        return productRepository.countByCategory(category);
     }
 
     public Map<Category, Long> countProductsByCategory() {
