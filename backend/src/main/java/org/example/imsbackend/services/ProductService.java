@@ -2,6 +2,8 @@ package org.example.imsbackend.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.imsbackend.dto.ProductFilter;
+import org.example.imsbackend.dto.StockMovementFilter;
+import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.models.Product;
 import org.example.imsbackend.repositories.ProductRepository;
 import org.springframework.data.domain.Page;
@@ -11,8 +13,11 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Validated
@@ -62,4 +67,36 @@ public class ProductService {
     public void deleteAllProducts() {
         productRepository.deleteAll();
     }
+
+    public long countProducts() {
+        return productRepository.count();
+    }
+
+    public long totalStock() {
+        return productRepository.findAll().stream()
+                .mapToLong(Product::getStock)
+                .sum();
+    }
+
+    public double totalInventoryValue() {
+        return productRepository.findAll().stream()
+                .mapToDouble(product -> product.getPrice() * product.getStock())
+                .sum();
+    }
+
+    public Page<Product> productsBelowMinimumStock(StockMovementFilter filter) {
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize());
+        return productRepository.findProductsBelowMinimumStock(pageable);
+    }
+
+    public Map<Category, Long> countProductsByCategory() {
+        return Arrays.stream(Category.values())
+                .collect(Collectors.toMap(
+                        category -> category,
+                        category -> productRepository.countByCategory(category.name())
+                ));
+    }
+
+
+
 }
