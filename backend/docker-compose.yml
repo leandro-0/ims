@@ -30,6 +30,8 @@ services:
       - "traefik.http.routers.traefik.entrypoints=websecure"
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_CREDENTIALS}"
     networks:
       - ims-network
     profiles:
@@ -147,7 +149,7 @@ services:
         "--http-port=${KEYCLOAK_PORT:-7080}",
         "--hostname-strict=false",
         "--proxy-headers=xforwarded",
-        "--import-realm"
+        "--import-realm",
       ]
     volumes:
       - ${KEYCLOAK_VOLUME_PATH}:/opt/keycloak/data
