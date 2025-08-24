@@ -81,6 +81,10 @@ export const authOptions: NextAuthOptions = {
         token.username = keycloakProfile.preferred_username
       }
 
+      if (token.accessToken && token.expiresAt && Date.now() > token.expiresAt) {
+        return {}
+      }
+
       return token
     },
     async session({ session, token }) {
