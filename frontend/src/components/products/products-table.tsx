@@ -5,23 +5,27 @@ import {
 } from "@/services/product-service"
 import ProductTableRow from "@/components/products/product-table-row"
 import TablePagination from "../table-pagination"
+import assert from "assert"
 
 interface ProductsTableProps {
   products: Product[]
   loading: boolean
-  openEditModal: (product: Product) => void
-  setProductToDelete: (product: Product | null) => void
+  openEditModal?: (product: Product) => void
+  setProductToDelete?: (product: Product | null) => void
   setCurrentPage: (page: number) => void
   currentPage: number
   totalPages: number
   pageSize: number
   setPageSize: (size: number) => void
-  hasAnyRole: (roles: string[]) => boolean
+  hasAnyRole?: (roles: string[]) => boolean
+  includeActions?: boolean
 }
 
 export default function ProductsTable(props: ProductsTableProps) {
-  const hasAccessToActions = props.hasAnyRole(["role_admin", "role_employee"])
-  const canDelete = props.hasAnyRole(["role_admin"])
+  const hasAccessToActions = (props.includeActions ?? true) && props.hasAnyRole != undefined && props.hasAnyRole(["role_admin", "role_employee"])
+  const canDelete = (props.includeActions ?? true) && props.hasAnyRole != undefined && props.hasAnyRole(["role_admin"])
+
+  assert(!props.includeActions || props.hasAnyRole || props.openEditModal || props.setProductToDelete, "If includeActions is true, hasAnyRole, openEditModal and setProductToDelete must be provided")
 
   return (
     <>

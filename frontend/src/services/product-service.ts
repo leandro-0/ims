@@ -115,6 +115,11 @@ class ProductService extends BaseService {
       method: "DELETE",
     })
   }
+
+  async getLowStockProducts(filters: ProductFilters): Promise<ProductResponse> {
+    const url = `/dashboard/bellow-minimum-stock?page=${filters.page || 0}&size=${filters.size || 10}`
+    return this.request<ProductResponse>(url) as Promise<ProductResponse>
+  }
 }
 
 export const productService = new ProductService()
@@ -133,5 +138,11 @@ export const PRODUCT_CATEGORIES = [
   { value: "FOOD", label: "Comida" },
   { value: "TOYS", label: "Juguetes" },
 ] as const
+
+export function getCategoryLabel(value: string): string {
+  value = value.toUpperCase()
+  const category = PRODUCT_CATEGORIES.find((cat) => cat.value === value)
+  return category ? category.label : value
+}
 
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number]["value"]

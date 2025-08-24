@@ -14,8 +14,8 @@ const getCategoryLabel = (value: string) => {
 
 interface ProductTableRowProps {
   product: Product
-  openEditModal: (product: Product) => void
-  setProductToDelete: (product: Product) => void
+  openEditModal?: (product: Product) => void
+  setProductToDelete?: (product: Product) => void
   canDelete: boolean
   hasAccessToActions: boolean
 }
@@ -37,11 +37,11 @@ export default function ProductTableRow({ product, openEditModal, setProductToDe
       {hasAccessToActions && (
         <TableCell>
           <div className="flex justify-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => openEditModal(product)}>
+            <Button variant="outline" size="icon" onClick={() => openEditModal!(product)}>
               <Edit className="h-4 w-4" />
             </Button>
             {canDelete && (
-              <Button variant="outline" size="icon" onClick={() => setProductToDelete(product)}>
+              <Button variant="outline" size="icon" onClick={() => setProductToDelete!(product)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
