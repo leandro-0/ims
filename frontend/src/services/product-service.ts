@@ -1,4 +1,4 @@
-import { getSession, signOut } from 'next-auth/react'
+import { getSession } from 'next-auth/react'
 
 // Tipos para las peticiones y respuestas
 export interface Product {
@@ -8,6 +8,7 @@ export interface Product {
   price: number
   initialStock: number
   stock: number
+  minimunStock?: number
   category: string
 }
 
@@ -46,11 +47,13 @@ export interface CreateProductRequest {
   price: number
   initialStock: number
   category: string
+  minimumStock: number
 }
 
 export interface UpdateProductRequest extends CreateProductRequest {
   id: string
   stock: number
+  minimumStock: number
 }
 
 export interface ProductFilters {
@@ -66,7 +69,7 @@ export interface ProductFilters {
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1/products"
 
 class ProductService {
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> | undefined {
     const url = `${API_BASE_URL}${endpoint}`
     const session = await getSession()
     const config: RequestInit = {
@@ -138,7 +141,7 @@ class ProductService {
     const queryString = params.toString()
     const endpoint = `/search${queryString ? `?${queryString}` : ""}`
 
-    return this.request<ProductResponse>(endpoint)
+    return this.request<ProductResponse>(endpoint)!
   }
 
   /**
@@ -158,7 +161,7 @@ class ProductService {
     return this.request<Product>("", {
       method: "POST",
       body: JSON.stringify(productData),
-    })
+    })!
   }
 
   /**
@@ -168,7 +171,7 @@ class ProductService {
     return this.request<Product>(`/${product.id}`, {
       method: "PUT",
       body: JSON.stringify(product),
-    })
+    })!
   }
 
   /**
@@ -178,65 +181,6 @@ class ProductService {
     return this.request<void>(`/${productId}`, {
       method: "DELETE",
     })
-  }
-
-  /**
-   * Obtiene un producto por ID
-   */
-  async getProductById(productId: string): Promise<Product> {
-    return this.request<Product>(`/${productId}`)
-  }
-
-  /**
-   * Actualiza solo el stock de un producto
-   */
-  async updateProductStock(productId: string, newStock: number): Promise<Product> {
-    return this.request<Product>(`/${productId}/stock`, {
-      method: "PATCH",
-      body: JSON.stringify({ stock: newStock }),
-    })
-  }
-
-  /**
-   * Obtiene todas las categorías disponibles
-   */
-  async getCategories(): Promise<string[]> {
-    return this.request<string[]>("/categories")
-  }
-
-  /**
-   * Exporta productos a CSV
-   */
-  async exportProducts(filters: ProductFilters = {}): Promise<Blob> {
-    const params = new URLSearchParams()
-
-    if (filters.name) params.append("name", filters.name)
-    if (filters.categories && filters.categories.length > 0) {
-      filters.categories.forEach((category) => {
-        params.append("categories", category)
-      })
-    }
-    if (filters.minPrice !== undefined) {
-      params.append("minPrice", filters.minPrice.toString())
-    }
-    if (filters.maxPrice !== undefined) {
-      params.append("maxPrice", filters.maxPrice.toString())
-    }
-
-    const queryString = params.toString()
-    const endpoint = `/export${queryString ? `?${queryString}` : ""}`
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      headers: {
-        Accept: "text/csv",
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Export failed: ${response.status}`)
-    }
-
-    return response.blob()
   }
 }
 

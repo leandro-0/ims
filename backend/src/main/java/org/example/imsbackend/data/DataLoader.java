@@ -49,6 +49,8 @@ public class DataLoader implements CommandLineRunner {
         int initialStock = faker.number().numberBetween(0, 101);
         product.setInitialStock(initialStock);
         product.setStock(faker.number().numberBetween(0, initialStock + 1));
+        int minimumStock = faker.number().numberBetween(0, initialStock + 1);
+        product.setMinimumStock(minimumStock);
         return product;
     }
 

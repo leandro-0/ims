@@ -13,7 +13,7 @@ interface AuthContextType {
   hasAnyRole: (roles: string[]) => boolean
 }
 
-const AuthContext = createContext<AuthContextType | null>(null)
+export const AuthContext = createContext<AuthContextType | null>(null)
 
 interface AuthProviderProps {
   children: ReactNode
@@ -21,10 +21,10 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { data: session, status } = useSession()
-  
+
   const isLoading = status === "loading"
   const isAuthenticated = !!session?.user
-  
+
   const login = async (): Promise<void> => {
     await signIn('keycloak-pkce', { callbackUrl: '/' })
   }
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const hasRole = (role: string): boolean => {
     if (!session?.user?.roles) return false
-    return session.user.roles.some((r: string) => 
+    return session.user.roles.some((r: string) =>
       r === role || r === `ROLE_${role}` || r.toUpperCase() === role.toUpperCase()
     )
   }

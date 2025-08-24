@@ -8,6 +8,7 @@ import org.example.imsbackend.dto.ProductFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,18 +31,18 @@ public class ProductIntegrationController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product) {
-        return productController.createProduct(product);
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO product, Authentication authentication) {
+        return productController.createProduct(product, authentication);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") String id,
-            @Valid @RequestBody ProductDTO product) {
-        return productController.updateProduct(id, product);
+            @Valid @RequestBody ProductDTO product, Authentication authentication) {
+        return productController.updateProduct(id, product, authentication);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id) {
-        return productController.deleteProduct(id);
+    public ResponseEntity<Void> deleteProduct(@PathVariable("id") String id, Authentication authentication) {
+        return productController.deleteProduct(id, authentication);
     }
 }

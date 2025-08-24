@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import { NextAuthOptions } from "next-auth"
+import { jwtDecode } from "jwt-decode"
 
 const clientId = process.env.KEYCLOAK_CLIENT_ID || "ims"
 const issuer = process.env.KEYCLOAK_ISSUER || "http://localhost:7080/realms/ims-realm"
@@ -40,11 +41,11 @@ export const authOptions: NextAuthOptions = {
       client: {
         token_endpoint_auth_method: "none"
       },
-      authorization: { 
-        params: { 
+      authorization: {
+        params: {
           scope: "openid profile email",
           response_type: "code",
-        } 
+        }
       },
       profile(profile: KeycloakProfile) {
         return {
@@ -65,12 +66,16 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = account.access_token
         token.refreshToken = account.refresh_token
         token.expiresAt = Date.now() + (Number(account.expires_in) || 3600) * 1000
+
+        const decodedToken = jwtDecode(account?.access_token)
+        if (decodedToken && typeof decodedToken !== 'string') {
+          token.roles = decodedToken?.resource_access.ims.roles || []
+        }
       }
-      
+
       if (profile) {
         const keycloakProfile = profile as KeycloakProfile
         token.username = keycloakProfile.preferred_username
-        token.roles = keycloakProfile.realm_access?.roles || []
       }
 
       // 🔑 VALIDAR TOKEN EN CADA REQUEST
@@ -82,7 +87,7 @@ export const authOptions: NextAuthOptions = {
           return {}
         }
       }
-      
+
       return token
     },
     async session({ session, token }) {
@@ -94,7 +99,7 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken as string
       session.user.username = token.username as string
       session.user.roles = token.roles as string[]
-      
+
       return session
     }
   },
