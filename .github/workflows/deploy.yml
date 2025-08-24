@@ -59,7 +59,7 @@ jobs:
               echo "KEYCLOAK_ISSUER=${{ vars.KEYCLOAK_ISSUER }}" >> .env
               echo "KEYCLOAK_ISSUER_SERVER=${{ vars.KEYCLOAK_ISSUER_SERVER }}" >> .env
               echo "ACME_EMAIL=${{ secrets.ACME_EMAIL }}" >> .env
-              echo "TRAEFIK_DASHBOARD_CREDENTIALS=$TRAEFIK_USER:$TRAEFIK_HASH" >> .env
+              echo "TRAEFIK_DASHBOARD_CREDENTIALS=${TRAEFIK_USER}:$TRAEFIK_HASH" >> .env
 
               echo ".env file created"
             fi
