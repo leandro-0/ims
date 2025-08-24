@@ -5,11 +5,13 @@ import org.example.imsbackend.dto.StatsData;
 import org.example.imsbackend.dto.UsernameCount;
 import org.example.imsbackend.enums.StockMovementType;
 import org.springframework.data.util.Pair;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Service
 public class DashboardService {
     private final StockMovementService stockMovementService;
     private final ProductService productService;
@@ -61,6 +63,7 @@ public class DashboardService {
         return new StatsData.MovementsLast24Hours(in, out, topUsers);
     }
 
+    // Movements last 7 days
     private StatsData.MovementsLast7Days getStockMovementLast7Days(){
         List<Pair<LocalDateTime, Long>> in = stockMovementService.stockMovementsLast7Days(StockMovementType.INCOMING);
         List<Pair<LocalDateTime, Long>> out = stockMovementService.stockMovementsLast7Days(StockMovementType.OUTGOING);
