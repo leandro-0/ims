@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Key, LogIn } from 'lucide-react'
+import LoadingPage from './loading-page'
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -57,10 +58,7 @@ export function LoginForm() {
             id="kc-login"
           >
             {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Conectando con Keycloak...
-              </>
+              <LoadingPage message='Conectando con Keycloak...' />
             ) : (
               <>
                 <LogIn className="mr-2 h-4 w-4" />

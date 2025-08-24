@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Edit, Trash2 } from "lucide-react"
+import { formatCurrency, formatNumber } from '../../lib/utils';
 import {
   type Product,
   PRODUCT_CATEGORIES,
@@ -13,8 +14,8 @@ const getCategoryLabel = (value: string) => {
 
 interface ProductTableRowProps {
   product: Product
-  openEditModal: (product: Product) => void
-  setProductToDelete: (product: Product) => void
+  openEditModal?: (product: Product) => void
+  setProductToDelete?: (product: Product) => void
   canDelete: boolean
   hasAccessToActions: boolean
 }
@@ -27,20 +28,20 @@ export default function ProductTableRow({ product, openEditModal, setProductToDe
       <TableCell>
         <Badge variant="secondary">{getCategoryLabel(product.category)}</Badge>
       </TableCell>
-      <TableCell className="text-right">${product.price.toLocaleString()}</TableCell>
+      <TableCell className="text-right">{formatCurrency(product.price)}</TableCell>
       <TableCell className="text-right">
-        <span className={product.stock <= (product.minimunStock ?? 0) ? "text-destructive font-semibold" : ""}>
-          {product.stock}
+        <span className={product.stock <= (product.minimumStock ?? 0) ? "text-destructive font-semibold" : ""}>
+          {formatNumber(product.stock)}
         </span>
       </TableCell>
       {hasAccessToActions && (
         <TableCell>
           <div className="flex justify-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => openEditModal(product)}>
+            <Button variant="outline" size="icon" onClick={() => openEditModal!(product)}>
               <Edit className="h-4 w-4" />
             </Button>
             {canDelete && (
-              <Button variant="outline" size="icon" onClick={() => setProductToDelete(product)}>
+              <Button variant="outline" size="icon" onClick={() => setProductToDelete!(product)}>
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}

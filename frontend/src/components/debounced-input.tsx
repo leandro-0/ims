@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react"
 import { Input } from "./ui/input"
 
 interface DebouncedInputProps {
@@ -10,9 +10,20 @@ interface DebouncedInputProps {
   debounceTime?: number
 }
 
-export default function DebouncedInput(props: DebouncedInputProps) {
+export interface DebouncedInputRef {
+  clear: () => void
+}
+
+const DebouncedInput = forwardRef<DebouncedInputRef, DebouncedInputProps>((props, ref) => {
   const [inputValue, setInputValue] = useState(props.value || "")
   const lastDebouncedValue = useRef(props.value || "")
+
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      setInputValue("")
+      lastDebouncedValue.current = ""
+    }
+  }))
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,7 +35,7 @@ export default function DebouncedInput(props: DebouncedInputProps) {
 
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue, props.onDebounce, props.debounceTime])
+  }, [props.debounceTime, inputValue, props.onDebounce])
 
   useEffect(() => {
     if (props.value !== undefined && props.value !== inputValue) {
@@ -46,4 +57,8 @@ export default function DebouncedInput(props: DebouncedInputProps) {
       onChange={handleChange}
     />
   )
-}
+})
+
+DebouncedInput.displayName = "DebouncedInput"
+
+export default DebouncedInput

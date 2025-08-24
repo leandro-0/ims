@@ -41,7 +41,7 @@ export default function ProductForm({ product, onSubmit, onCancel }: ProductForm
         initialStock: product.initialStock.toString(),
         stock: product.stock.toString(),
         category: product.category,
-        minimumStock: product.minimunStock?.toString() || "0",
+        minimumStock: product.minimumStock?.toString() || "0",
       })
     }
   }, [product])
@@ -87,7 +87,7 @@ export default function ProductForm({ product, onSubmit, onCancel }: ProductForm
         description: formData.description.trim(),
         price: Number(formData.price),
         initialStock: product.initialStock, // Do not update stock
-        stock: product.stock, // Do not update stock
+        stock: Number(formData.stock),
         category: formData.category,
         minimumStock: formData.minimumStock ? Number(formData.minimumStock) : 0,
       }
@@ -180,6 +180,21 @@ export default function ProductForm({ product, onSubmit, onCancel }: ProductForm
               min="0"
               value={formData.initialStock}
               onChange={(e) => handleInputChange("initialStock", e.target.value)}
+              placeholder="0"
+            />
+            {errors.initialStock && <p className="text-sm text-destructive">{errors.initialStock}</p>}
+          </div>
+        )}
+
+        {product && (
+          <div className="space-y-2">
+            <Label htmlFor="stock">Stock *</Label>
+            <Input
+              id="stock"
+              type="number"
+              min="0"
+              value={formData.stock}
+              onChange={(e) => handleInputChange("stock", e.target.value)}
               placeholder="0"
             />
             {errors.initialStock && <p className="text-sm text-destructive">{errors.initialStock}</p>}
