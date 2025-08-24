@@ -2,6 +2,7 @@ package org.example.imsbackend.repositories;
 
 import jakarta.validation.constraints.NotNull;
 import org.example.imsbackend.dto.UsernameCount;
+import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.enums.StockMovementType;
 import org.example.imsbackend.models.StockMovement;
 import org.springframework.data.domain.Page;
@@ -26,5 +27,5 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
     @Query("SELECT sm.username AS username, COUNT(sm) AS count FROM StockMovement sm WHERE sm.date > ?1 GROUP BY sm.username ORDER BY count DESC")
     List<UsernameCount> countByUsernameAfter(LocalDateTime date);
     @Query("SELECT COUNT(sm) FROM StockMovement sm JOIN Product p ON sm.product.productId = p.id WHERE p.category = ?1")
-    long countByProductCategory(String category);
+    long countByProductCategory(Category category);
 }

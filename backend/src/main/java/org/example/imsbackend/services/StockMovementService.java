@@ -76,29 +76,23 @@ public class StockMovementService {
         return stockMovementRepository.countByUsernameAfter(since);
     }
 
-    // Count of stock movements by type between two dates
-    public long countStockMovementsByTypeBetweenDates(StockMovementType type, LocalDateTime startDate, LocalDateTime endDate) {
-        return stockMovementRepository.countByTypeAndDateBetween(type, startDate, endDate);
-    }
-
     // Stock movements in the last 7 days grouped by day
     public List<Pair<LocalDateTime, Long>> stockMovementsLast7Days(StockMovementType type) {
         LocalDateTime now = LocalDateTime.now();
-        List<Pair<LocalDateTime,Long>> counts = Arrays.stream(new int[]{6,5,4,3,2,1,0})
+        return Arrays.stream(new int[]{6,5,4,3,2,1,0})
                 .mapToObj(i -> {
                     LocalDateTime start = now.minusDays(i).withHour(0).withMinute(0).withSecond(0).withNano(0);
                     LocalDateTime end = start.plusDays(1);
                     return Pair.of(start,stockMovementRepository.countByTypeAndDateBetween(type, start, end));
                 })
                 .toList();
-        return counts;
     }
 
     public Map<Category, Long> countMovementsByCategory() {
         return Arrays.stream(Category.values())
                 .collect(java.util.stream.Collectors.toMap(
                         category -> category,
-                        category -> stockMovementRepository.countByProductCategory(category.name())
+                        category -> stockMovementRepository.countByProductCategory(category)
                 ));
     }
 }
