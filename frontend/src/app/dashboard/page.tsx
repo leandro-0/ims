@@ -74,7 +74,7 @@ export default function InventoryDashboard() {
 
   const dataCategoriesMovements = data.categoriesMovement.map((category, index) => ({
     name: getCategoryLabel(category.name),
-    value: (category.value / (data.movementsLast24Hours.in + data.movementsLast24Hours.out)) * 100,
+    value: (category.value / (Math.max(data.movementsLast24Hours.in + data.movementsLast24Hours.out, 1))) * 100,
     color: barColors[index % barColors.length]
   }))
 
@@ -159,8 +159,8 @@ export default function InventoryDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Estadísticas por Categoría</CardTitle>
-          <CardDescription>Número de productos y porcentaje por categoría</CardDescription>
+          <CardTitle>Productos en stock bajo</CardTitle>
+          <CardDescription>Productos con cantidad en stock menor o igual a su stock mínimo</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex justify-between items-center mb-6">
