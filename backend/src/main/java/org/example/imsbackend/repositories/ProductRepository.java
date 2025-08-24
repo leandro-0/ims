@@ -1,5 +1,6 @@
 package org.example.imsbackend.repositories;
 
+import org.example.imsbackend.enums.Category;
 import org.example.imsbackend.models.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,5 +16,5 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
 
     // count products in a category
     @Query("SELECT COUNT(p) FROM Product p WHERE p.category = ?1")
-    long countByCategory(String category);
+    long countByCategory(Category category);
 }

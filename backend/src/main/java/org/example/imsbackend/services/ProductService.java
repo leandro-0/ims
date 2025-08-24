@@ -93,7 +93,7 @@ public class ProductService {
         return Arrays.stream(Category.values())
                 .collect(Collectors.toMap(
                         category -> category,
-                        category -> productRepository.countByCategory(category.name())
+                        category -> productRepository.countByCategory(category)
                 ));
     }
 
