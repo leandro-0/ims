@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth"
 import { jwtDecode } from "jwt-decode"
 
 const clientId = process.env.KEYCLOAK_CLIENT_ID || "ims"
+const serverIssuer = process.env.KEYCLOAK_ISSUER_SERVER || process.env.KEYCLOAK_ISSUER || "http://localhost:7080/realms/ims-realm"
 export const issuer = process.env.KEYCLOAK_ISSUER || "http://localhost:7080/realms/ims-realm"
 
 interface KeycloakProfile {
@@ -14,10 +15,9 @@ interface KeycloakProfile {
   }
 }
 
-// Función para validar token con Keycloak
 async function validateToken(token: string): Promise<boolean> {
   try {
-    const response = await fetch(`${issuer}/protocol/openid-connect/userinfo`, {
+    const response = await fetch(`${serverIssuer}/protocol/openid-connect/userinfo`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -34,17 +34,21 @@ export const authOptions: NextAuthOptions = {
       id: "keycloak-pkce",
       name: "Keycloak",
       type: "oauth",
-      wellKnown: `${issuer}/.well-known/openid-configuration`,
-      clientId: clientId,
-      clientSecret: undefined,
-      client: {
-        token_endpoint_auth_method: "none"
-      },
       authorization: {
+        url: `${issuer}/protocol/openid-connect/auth`,
         params: {
           scope: "openid profile email",
           response_type: "code",
         }
+      },
+      token: `${serverIssuer}/protocol/openid-connect/token`,
+      userinfo: `${serverIssuer}/protocol/openid-connect/userinfo`,
+      jwks_endpoint: `${serverIssuer}/protocol/openid-connect/certs`,
+      issuer: issuer,
+      clientId: clientId,
+      clientSecret: undefined,
+      client: {
+        token_endpoint_auth_method: "none"
       },
       profile(profile: KeycloakProfile) {
         return {
@@ -77,16 +81,6 @@ export const authOptions: NextAuthOptions = {
         token.username = keycloakProfile.preferred_username
       }
 
-      // 🔑 VALIDAR TOKEN EN CADA REQUEST
-      if (token.accessToken) {
-        const isValid = await validateToken(token.accessToken as string)
-        if (!isValid) {
-          // Token inválido, forzar logout
-          console.log('Token invalidado por Keycloak, limpiando sesión')
-          return {}
-        }
-      }
-
       return token
     },
     async session({ session, token }) {
@@ -108,7 +102,7 @@ export const authOptions: NextAuthOptions = {
       if (token?.accessToken) {
         // Opcional: Llamar al logout endpoint de Keycloak
         try {
-          await fetch(`${issuer}/protocol/openid-connect/logout`, {
+          await fetch(`${serverIssuer}/protocol/openid-connect/logout`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
