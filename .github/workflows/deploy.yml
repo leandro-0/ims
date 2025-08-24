@@ -30,6 +30,9 @@ jobs:
             fi
             cd ims/backend
 
+            # Ensure Keycloak permissions
+            mkdir -p ./keycloak/data && chmod -R 777 ./keycloak/data
+
             if [ ! -f ".env" ]; then
               TRAEFIK_HASH=$(echo "$TRAEFIK_PASSWORD" | openssl passwd -apr1 -stdin)
 
