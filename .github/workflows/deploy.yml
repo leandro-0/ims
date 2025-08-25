@@ -1,8 +1,6 @@
 name: Deploy to Production Server
 
 on:
-  push:
-    branches: [main, traefik]
   workflow_run:
     workflows: ["Playwright Tests"]
     types:
@@ -14,7 +12,7 @@ jobs:
     environment: production
     name: Deploy to Server
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Deploy to server
