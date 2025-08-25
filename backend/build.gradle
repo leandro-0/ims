@@ -51,6 +51,11 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-junit:7.23.0'
     testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.23.0'
     testImplementation 'io.cucumber:cucumber-spring:7.23.0'
+
+    // h2 for testing
+    testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.mockito:mockito-core:5.19.0'
+
 }
 
 tasks.named('test') {
