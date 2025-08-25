@@ -32,6 +32,8 @@ jobs:
 
             # Ensure Keycloak permissions
             mkdir -p ./keycloak/data && chmod -R 777 ./keycloak/data
+            mkdir -p ./grafana/data && chmod -R 777 ./grafana/data
+            mkdir -p ./grafana/dashboards && chmod -R 777 ./grafana/dashboards
 
             if [ ! -f ".env" ]; then
               TRAEFIK_HASH=$(echo "$TRAEFIK_PASSWORD" | openssl passwd -apr1 -stdin)
@@ -60,6 +62,10 @@ jobs:
               echo "KEYCLOAK_ISSUER_SERVER=${{ vars.KEYCLOAK_ISSUER_SERVER }}" >> .env
               echo "ACME_EMAIL=${{ secrets.ACME_EMAIL }}" >> .env
               echo "TRAEFIK_DASHBOARD_CREDENTIALS=${TRAEFIK_USER}:$TRAEFIK_HASH" >> .env
+              echo "PROMETHEUS_PORT=${{ vars.PROMETHEUS_PORT }}" >> .env
+              echo "GRAFANA_PORT=${{ vars.GRAFANA_PORT }}" >> .env
+              echo "GRAFANA_SECURITY_ADMIN_USER=${{ secrets.GRAFANA_SECURITY_ADMIN_USER }}" >> .env
+              echo "GRAFANA_SECURITY_ADMIN_PASSWORD=${{ secrets.GRAFANA_SECURITY_ADMIN_PASSWORD }}" >> .env
 
               echo ".env file created"
             fi
