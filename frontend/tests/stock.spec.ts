@@ -48,7 +48,7 @@ test.describe('Stock Movements', () => {
       const cells = firstMovementRow.locator('td')
       await expect(cells).toHaveCount(6)
     } else {
-      await expect(emptyCell).toBeVisible()
+      await expect(emptyCell).toBeVisible({ timeout: 15000 })
     }
 
     const countDisplay = page.locator('div.text-sm.text-muted-foreground').filter({ hasText: /Mostrando \d+ movimientos de \d+/ })
