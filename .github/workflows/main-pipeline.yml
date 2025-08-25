@@ -12,11 +12,6 @@ permissions:
   packages: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
   build-and-push:
     name: Build and Push Docker Images
     uses: ./.github/workflows/build-and-push.yml
