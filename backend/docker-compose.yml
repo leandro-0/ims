@@ -81,6 +81,7 @@ services:
       - ./.env:/app/.env
     depends_on:
       - postgres-test
+      - keycloak-test
     profiles:
       - test-with-backend
     networks:
