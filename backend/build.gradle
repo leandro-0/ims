@@ -63,6 +63,27 @@ dependencies {
 
 }
 
-tasks.named('test') {
+test {
+    useJUnit()
+    include '**/CucumberTest*'
+}
+
+tasks.register('cucumberTest', Test) {
+    useJUnit()
+    include '**/CucumberTest*'
+    exclude '**/*ServiceTest*'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+tasks.register('unitTest', Test) {
     useJUnitPlatform()
+    include '**/*ServiceTest*'
+    exclude '**/CucumberTest*'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }
