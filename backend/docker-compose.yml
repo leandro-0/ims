@@ -40,9 +40,7 @@ services:
   ims-backend:
     container_name: ims-backend
     restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME}/ims-backend:${BACKEND_IMAGE_TAG:-latest}
     env_file:
       - ./.env
     expose:
@@ -70,9 +68,7 @@ services:
   ims-backend-test:
     container_name: ims-backend
     restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME}/ims-backend:${BACKEND_IMAGE_TAG:-latest}
     env_file:
       - ./.env
     ports:
@@ -186,9 +182,7 @@ services:
   ims-frontend:
     container_name: ims-frontend
     restart: always
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME}/ims-frontend:${FRONTEND_IMAGE_TAG:-latest}
     env_file:
       - ./.env
     environment:
