@@ -156,7 +156,7 @@ public class StockMovementServiceTest {
         when(stockMovementRepository.countByTypeAndDateAfter(StockMovementType.INCOMING, since))
                 .thenReturn(5L);
 
-        long result = stockMovementService.countStockMovementsByTypeInLast24Hours(StockMovementType.INCOMING);
+        long result = stockMovementService.countStockMovementsByTypeInLast24Hours(StockMovementType.INCOMING, since);
 
         assertEquals(5L, result);
     }

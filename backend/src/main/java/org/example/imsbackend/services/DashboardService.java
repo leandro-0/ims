@@ -58,8 +58,8 @@ public class DashboardService {
 
     // Movements last 24 hours
     private StatsData.MovementsLast24Hours getStockMovementLast24Hours(){
-        long in = stockMovementService.countStockMovementsByTypeInLast24Hours(StockMovementType.INCOMING);
-        long out = stockMovementService.countStockMovementsByTypeInLast24Hours(StockMovementType.OUTGOING);
+        long in = stockMovementService.countStockMovementsByTypeInLast24Hours(StockMovementType.INCOMING, LocalDateTime.now());
+        long out = stockMovementService.countStockMovementsByTypeInLast24Hours(StockMovementType.OUTGOING, LocalDateTime.now());
         List<UsernameCount> usernameCounts = stockMovementService.countStockMovementsByUsernameInLast24Hours(LocalDateTime.now());
         //just top 3
         if (usernameCounts.size() > 3) {
