@@ -41,3 +41,4 @@ keycloak/data
 h2/
 target/cucumber-reports.html
 letsencrypt/
+/grafana/data/
