@@ -37,7 +37,7 @@ jobs:
           # Ensure Keycloak permissions
           mkdir -p ./keycloak/data && chmod -R 777 ./keycloak/data
 
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.sha }}
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.head_ref || github.ref_name }}
 
           docker compose --profile test-with-backend up -d
 
