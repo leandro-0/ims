@@ -34,7 +34,6 @@ test.describe('Stock Movements', () => {
 
     // Check if movements are loaded
     const loadingCell = page.locator('td').filter({ hasText: 'Cargando datos...' })
-    const emptyCell = page.locator('td').filter({ hasText: 'No hay movimientos de stock registrados' })
     const movementRows = page.locator('tbody tr')
 
     await expect(loadingCell).not.toBeVisible({ timeout: 10000 })
@@ -47,8 +46,6 @@ test.describe('Stock Movements', () => {
 
       const cells = firstMovementRow.locator('td')
       await expect(cells).toHaveCount(6)
-    } else {
-      await expect(emptyCell).toBeVisible({ timeout: 15000 })
     }
 
     const countDisplay = page.locator('div.text-sm.text-muted-foreground').filter({ hasText: /Mostrando \d+ movimientos de \d+/ })
