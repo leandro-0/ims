@@ -1,11 +1,7 @@
 name: Deploy to Production Server
 
 on:
-  workflow_run:
-    workflows: ["Playwright Tests"]
-    types:
-      - completed
-  workflow_dispatch:
+  workflow_call:
 
 jobs:
   deploy:
@@ -42,8 +38,8 @@ jobs:
             TRAEFIK_HASH=$(echo "$TRAEFIK_PASSWORD" | openssl passwd -apr1 -stdin)
 
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
-            echo "BACKEND_IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> .env
-            echo "FRONTEND_IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> .env
+            echo "BACKEND_IMAGE_TAG=${{ github.sha }}" >> .env
+            echo "FRONTEND_IMAGE_TAG=${{ github.sha }}" >> .env
             echo "POSTGRES_HOST=${{ vars.POSTGRES_HOST }}" >> .env
             echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env
             echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
@@ -73,13 +69,13 @@ jobs:
             echo "GRAFANA_SECURITY_ADMIN_USER=${{ secrets.GRAFANA_SECURITY_ADMIN_USER }}" >> .env
             echo "GRAFANA_SECURITY_ADMIN_PASSWORD=${{ secrets.GRAFANA_SECURITY_ADMIN_PASSWORD }}" >> .env
 
-            echo ".env file updated with commit SHA: ${{ github.event.workflow_run.head_sha }}"
+            echo ".env file updated with commit SHA: ${{ github.sha }}"
 
             git checkout ${{ github.ref_name }}
             git pull origin ${{ github.ref_name }}
 
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.event.workflow_run.head_sha }}
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-frontend:${{ github.event.workflow_run.head_sha }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.sha }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-frontend:${{ github.sha }}
 
             docker compose --profile prod up -d
             docker image prune -f

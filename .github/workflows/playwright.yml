@@ -1,16 +1,11 @@
 name: Playwright Tests
 on:
-  workflow_run:
-    workflows: ["Build and Push Docker Images"]
-    types:
-      - completed
-  workflow_dispatch:
+  workflow_call:
 jobs:
   test:
     environment: testing
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -33,8 +28,8 @@ jobs:
           echo "KEYCLOAK_LOGIN_URI=${{ vars.KEYCLOAK_LOGIN_URI }}" >> .env
           echo "IMS_SHOULD_POPULATE=${{ vars.IMS_SHOULD_POPULATE }}" >> .env
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
-          echo "BACKEND_IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> .env
-          echo "FRONTEND_IMAGE_TAG=${{ github.event.workflow_run.head_sha }}" >> .env
+          echo "BACKEND_IMAGE_TAG=${{ github.sha }}" >> .env
+          echo "FRONTEND_IMAGE_TAG=${{ github.sha }}" >> .env
 
       - name: Set up docker compose with test-with-backend profile
         working-directory: ./backend
@@ -42,7 +37,7 @@ jobs:
           # Ensure Keycloak permissions
           mkdir -p ./keycloak/data && chmod -R 777 ./keycloak/data
 
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.event.workflow_run.head_sha }}
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.sha }}
 
           docker compose --profile test-with-backend up -d
 
