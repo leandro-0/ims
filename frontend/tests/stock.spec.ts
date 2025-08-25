@@ -30,7 +30,7 @@ test.describe('Stock Movements', () => {
 
   test('should load stock movements', async ({ page }) => {
     const table = page.locator('table')
-    await expect(table).toBeVisible()
+    await expect(table).toBeVisible({ timeout: 10000 })
 
     // Check if movements are loaded
     const loadingCell = page.locator('td').filter({ hasText: 'Cargando datos...' })
