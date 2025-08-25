@@ -65,14 +65,12 @@ public class StockMovementService {
 
     // Dashboard methods
     // Count of stock movements by type in the last 24 hours
-    public long countStockMovementsByTypeInLast24Hours(StockMovementType type) {
-        LocalDateTime since = LocalDateTime.now().minusHours(24);
+    public long countStockMovementsByTypeInLast24Hours(StockMovementType type, LocalDateTime since) {
         return stockMovementRepository.countByTypeAndDateAfter(type, since);
     }
 
     // Count of stock movements grouped by username in the last 24 hours
-    public List<UsernameCount> countStockMovementsByUsernameInLast24Hours() {
-        LocalDateTime since = LocalDateTime.now().minusHours(24);
+    public List<UsernameCount> countStockMovementsByUsernameInLast24Hours(LocalDateTime since) {
         return stockMovementRepository.countByUsernameAfter(since);
     }
 
