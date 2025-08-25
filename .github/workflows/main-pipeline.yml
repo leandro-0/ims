@@ -8,6 +8,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
   build-and-push:
     name: Build and Push Docker Images
     uses: ./.github/workflows/build-and-push.yml
@@ -23,6 +28,6 @@ jobs:
   deploy:
     name: Deploy to Production
     needs: [build-and-push, playwright-tests]
-    if: ${{ always() && needs.playwright-tests.result == 'success' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/traefik') && github.event_name != 'pull_request' }}
+    if: ${{ always() && needs.playwright-tests.result == 'success' && needs.build-and-push.result == 'success' && github.event_name != 'pull_request' }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
