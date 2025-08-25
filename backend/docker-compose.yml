@@ -259,6 +259,21 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - ims-network
+    profiles:
+      - dev
+
+  prometheus-prod:
+    image: prom/prometheus:latest
+    container_name: prometheus-prod
+    restart: always
+    expose:
+      - 9090
+    volumes:
+      - ./prometheus/prometheus-prod.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - ims-network
+    profiles:
+      - prod
 
   grafana:
     image: grafana/grafana
@@ -281,6 +296,42 @@ services:
       - prometheus
     networks:
       - ims-network
+    profiles:
+      - dev
+
+  grafana-prod:
+    image: grafana/grafana
+    container_name: grafana-prod
+    restart: always
+    env_file:
+      - ./.env
+    expose:
+      - 3000
+    volumes:
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources/datasources-prod.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana/dashboards:/etc/grafana/dashboards
+      - ./grafana/data:/var/lib/grafana
+    environment:
+      - GF_SERVER_HTTP_PORT=3000
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_SECURITY_ADMIN_PASSWORD}
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/spring-boot-statistics.json
+      - GF_SERVER_ROOT_URL=https://grafana.leandroj.tech
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+    depends_on:
+      - prometheus-prod
+      - traefik
+    networks:
+      - ims-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.leandroj.tech`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    profiles:
+      - prod
 
 networks:
   ims-network:
