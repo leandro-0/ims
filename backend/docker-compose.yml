@@ -67,6 +67,25 @@ services:
     networks:
       - ims-network
 
+  ims-backend-test:
+    container_name: ims-backend
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    ports:
+      - 8080:8080
+    volumes:
+      - ./.env:/app/.env
+    depends_on:
+      - postgres-test
+    profiles:
+      - test-with-backend
+    networks:
+      - ims-network
+
   postgres:
     container_name: ims-database
     image: postgres
@@ -216,6 +235,7 @@ services:
       - ims-network
     profiles:
       - test
+      - test-with-backend
 
   keycloak-test:
     container_name: keycloak-auth-test
@@ -247,6 +267,7 @@ services:
       - ./keycloak/realm-test.json:/opt/keycloak/data/import/realm.json
     profiles:
       - test
+      - test-with-backend
     networks:
       - ims-network
 

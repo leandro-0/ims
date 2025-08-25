@@ -3,6 +3,10 @@ name: Deploy to Production Server
 on:
   push:
     branches: [main, traefik]
+  workflow_run:
+    workflows: ["Playwright Tests"]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
