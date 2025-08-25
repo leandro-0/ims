@@ -177,7 +177,7 @@ export default function ProductsPage() {
                     setSearchTerm(value)
                   }}
                 />
-                <Button onClick={handleSearch} size="icon">
+                <Button onClick={handleSearch} size="icon" id="search-button">
                   <Search className="h-4 w-4" />
                 </Button>
               </div>
