@@ -244,7 +244,7 @@ services:
     command:
       ["start-dev", "--http-port", "${KEYCLOAK_PORT:-7080}", "--import-realm"]
     volumes:
-      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+      - ./keycloak/realm-test.json:/opt/keycloak/data/import/realm.json
     profiles:
       - test
     networks:
