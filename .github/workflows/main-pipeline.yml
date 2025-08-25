@@ -7,6 +7,10 @@ on:
     branches: [main, traefik]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,6 +20,9 @@ jobs:
   build-and-push:
     name: Build and Push Docker Images
     uses: ./.github/workflows/build-and-push.yml
+    permissions:
+      contents: read
+      packages: write
     secrets: inherit
 
   playwright-tests:
