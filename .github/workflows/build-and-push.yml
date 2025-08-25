@@ -8,8 +8,6 @@ on:
 
 env:
   REGISTRY: docker.io
-  BACKEND_IMAGE_NAME: ${{ github.repository }}-backend
-  FRONTEND_IMAGE_NAME: ${{ github.repository }}-frontend
 
 jobs:
   build:
@@ -24,12 +22,10 @@ jobs:
           - component: backend
             context: ./backend
             dockerfile: ./backend/Dockerfile
-            image_name: ${{ github.repository }}-backend
           - component: frontend
             context: ./frontend
             dockerfile: ./frontend/Dockerfile
-            image_name: ${{ github.repository }}-frontend
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,7 +45,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ matrix.image_name }}
+          images: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/ims-${{ matrix.component }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -77,3 +73,4 @@ jobs:
         run: |
           echo "${{ matrix.component }} image built successfully"
           echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Image: ${{ secrets.DOCKERHUB_USERNAME }}/ims-${{ matrix.component }}"
