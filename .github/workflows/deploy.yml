@@ -33,12 +33,12 @@ jobs:
             mkdir -p ./grafana/data && chmod -R 777 ./grafana/data
             mkdir -p ./grafana/dashboards && chmod -R 777 ./grafana/dashboards
 
-            # Always update the .env file with latest commit SHA
+            # Always update the .env file with latest branch tag
             TRAEFIK_HASH=$(echo "$TRAEFIK_PASSWORD" | openssl passwd -apr1 -stdin)
 
             echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
-            echo "BACKEND_IMAGE_TAG=${{ github.sha }}" >> .env
-            echo "FRONTEND_IMAGE_TAG=${{ github.sha }}" >> .env
+            echo "BACKEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
+            echo "FRONTEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
             echo "POSTGRES_HOST=${{ vars.POSTGRES_HOST }}" >> .env
             echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env
             echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
@@ -68,7 +68,7 @@ jobs:
             echo "GRAFANA_SECURITY_ADMIN_USER=${{ secrets.GRAFANA_SECURITY_ADMIN_USER }}" >> .env
             echo "GRAFANA_SECURITY_ADMIN_PASSWORD=${{ secrets.GRAFANA_SECURITY_ADMIN_PASSWORD }}" >> .env
 
-            echo ".env file updated with commit SHA: ${{ github.sha }}"
+            echo ".env file updated with branch tag: ${{ github.head_ref || github.ref_name }}"
 
             git checkout ${{ github.ref_name }}
             git pull origin ${{ github.ref_name }}

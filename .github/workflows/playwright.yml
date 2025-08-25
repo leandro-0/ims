@@ -28,8 +28,8 @@ jobs:
           echo "KEYCLOAK_LOGIN_URI=${{ vars.KEYCLOAK_LOGIN_URI }}" >> .env
           echo "IMS_SHOULD_POPULATE=${{ vars.IMS_SHOULD_POPULATE }}" >> .env
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
-          echo "BACKEND_IMAGE_TAG=${{ github.sha }}" >> .env
-          echo "FRONTEND_IMAGE_TAG=${{ github.sha }}" >> .env
+          echo "BACKEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
+          echo "FRONTEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
 
       - name: Set up docker compose with test-with-backend profile
         working-directory: ./backend
