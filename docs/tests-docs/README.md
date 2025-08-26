@@ -72,12 +72,6 @@ Se implementaron múltiples escenarios de prueba con Cucumber con el objetivo de
 - Existente: 204 No Content indicando que fue eliminado correctamente
 - No Existente: 404 Not Found
 
-### Resultados
-
-Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra en la siguiente imagen:
-
-![cucumber-tests-passed](cucumber-tests.png)
-
 ### Escenarios de Movimiento de Stock
 
 #### Seguir movimiento de stock en la creación de un producto
@@ -116,6 +110,13 @@ Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra 
 
 - Escenario: Multiple low stock notifications for the same product
 - Resultado Esperado: 200 ok, la notificacion con la información del producto con el stock minimo y el stock que causo la notificación, seguido de 200 ok, y una nueva notificacion con la información del producto con el stock minimo y el stock que causo la segunda notificación 
+
+### Resultados
+
+Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra en las siguientes imagenes:
+
+![cucumber-tests-passed](cucumber-tests-0.png)
+![cucumber-tests-passed](cucumber-tests-1.png)
 
 ## Pruebas de Navegadores con Playwright
 
