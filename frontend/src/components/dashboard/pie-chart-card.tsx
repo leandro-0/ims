@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { PieChartIcon } from 'lucide-react'
+import { formatNumber } from '@/lib/utils'
 
 interface PieChartCardProps {
   title: string
@@ -54,7 +55,7 @@ export default function PieChartCard(props: PieChartCardProps) {
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: entry.color }}
               ></div>
-              <span className="text-xs">{entry.name}: {entry.value}%</span>
+              <span className="text-xs">{entry.name}: {formatNumber(entry.value)}%</span>
             </div>
           ))}
         </div>
