@@ -7,15 +7,15 @@ Feature: Product Management
   Scenario: Retrieve products with pagination
     Given I am an anonymous user
     And the following products exist:
-      | name      | description   | price | initialStock | stock | category    |
-      | Product A | Description A |    50 |          100 |    90 | ELECTRONICS |
-      | Product B | Description B |   150 |           50 |    45 | ELECTRONICS |
-      | Product C | Description C |   250 |           30 |    25 | ELECTRONICS |
-      | Product D | Description D |   250 |           30 |    25 | ELECTRONICS |
-      | Product E | Description E |   250 |           30 |    25 | ELECTRONICS |
-      | Product F | Description F |   250 |           30 |    25 | ELECTRONICS |
-      | Product X | Description X |   250 |           30 |    25 | ELECTRONICS |
-      | Product Y | Description Y |   250 |           30 |    25 | ELECTRONICS |
+      | name      | description   | price | initialStock | stock | minimumStock | category    |
+      | Product A | Description A |    50 |          100 |    90 |          20 | ELECTRONICS |
+      | Product B | Description B |   150 |           50 |    45 |          10 | ELECTRONICS |
+      | Product C | Description C |   250 |           30 |    25 |           5 | ELECTRONICS |
+      | Product D | Description D |   250 |           30 |    25 |           5 | ELECTRONICS |
+      | Product E | Description E |   250 |           30 |    25 |           5 | ELECTRONICS |
+      | Product F | Description F |   250 |           30 |    25 |           5 | ELECTRONICS |
+      | Product X | Description X |   250 |           30 |    25 |           5 | ELECTRONICS |
+      | Product Y | Description Y |   250 |           30 |    25 |           5 | ELECTRONICS |
     When I retrieve products with page 1 and size 5
     Then I should receive a 200 response
     And I should receive 3 products
@@ -30,6 +30,7 @@ Feature: Product Management
       | price        |                         299.99 |
       | initialStock |                            100 |
       | stock        |                            100 |
+      | minimumStock |                             20 |
       | category     | ELECTRONICS                    |
     Then I should receive a 201 response
 
@@ -41,6 +42,7 @@ Feature: Product Management
       | price        |             99.99 |
       | initialStock |                50 |
       | stock        |                50 |
+      | minimumStock |                10 |
       | category     | ELECTRONICS       |
     Then I should receive a 400 response
 
@@ -52,6 +54,7 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                 50 |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -63,6 +66,7 @@ Feature: Product Management
       | price        |             -10.50 |
       | initialStock |                 50 |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -74,6 +78,7 @@ Feature: Product Management
       | price        |                    |
       | initialStock |                 50 |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -85,6 +90,7 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                 -5 |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -96,6 +102,7 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                    |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -107,6 +114,7 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                 50 |
       | stock        |                -10 |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -118,6 +126,7 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                 50 |
       | stock        |                    |
+      | minimumStock |                 10 |
       | category     | ELECTRONICS        |
     Then I should receive a 400 response
 
@@ -129,6 +138,7 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                 50 |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     | INVALID_CATEGORY   |
     Then I should receive a 400 response
 
@@ -140,16 +150,17 @@ Feature: Product Management
       | price        |              99.99 |
       | initialStock |                 50 |
       | stock        |                 50 |
+      | minimumStock |                 10 |
       | category     |                    |
     Then I should receive a 400 response
 
   Scenario: Retrieve all products without filters
     Given I am an anonymous user
     Given the following products exist:
-      | name      | description   | price | initialStock | stock | category    |
-      | Product 1 | Description 1 |   100 |           50 |    45 | ELECTRONICS |
-      | Product 2 | Description 2 |   200 |           30 |    25 | CLOTHING    |
-      | Product 3 | Description 3 |   150 |           40 |    35 | TOYS        |
+      | name      | description   | price | initialStock | stock | minimumStock | category    |
+      | Product 1 | Description 1 |   100 |           50 |    45 |          10 | ELECTRONICS |
+      | Product 2 | Description 2 |   200 |           30 |    25 |           5 | CLOTHING    |
+      | Product 3 | Description 3 |   150 |           40 |    35 |           8 | TOYS        |
     When I retrieve all products
     Then I should receive a 200 response
     And I should receive 3 products
@@ -157,10 +168,10 @@ Feature: Product Management
   Scenario: Retrieve products with name filter
     Given I am an anonymous user
     And the following products exist:
-      | name           | description     | price | initialStock | stock | category    |
-      | Laptop Pro     | High-end laptop |  1200 |           10 |     8 | ELECTRONICS |
-      | Laptop Basic   | Entry laptop    |   600 |           20 |    15 | ELECTRONICS |
-      | Mouse Wireless | Wireless mouse  |    50 |          100 |    95 | ELECTRONICS |
+      | name           | description     | price | initialStock | stock | minimumStock | category    |
+      | Laptop Pro     | High-end laptop |  1200 |           10 |     8 |           2 | ELECTRONICS |
+      | Laptop Basic   | Entry laptop    |   600 |           20 |    15 |           5 | ELECTRONICS |
+      | Mouse Wireless | Wireless mouse  |    50 |          100 |    95 |          20 | ELECTRONICS |
     When I filter products by name "laptop"
     Then I should receive a 200 response
     And I should receive 2 products
@@ -169,10 +180,10 @@ Feature: Product Management
   Scenario: Retrieve products with category filter
     Given I am an anonymous user
     And the following products exist:
-      | name    | description    | price | initialStock | stock | category |
-      | T-Shirt | Cotton t-shirt |    25 |          100 |    90 | CLOTHING |
-      | Jeans   | Denim jeans    |    60 |           50 |    45 | CLOTHING |
-      | Novel   | Fiction book   |    15 |           30 |    28 | TOYS     |
+      | name    | description    | price | initialStock | stock | minimumStock | category |
+      | T-Shirt | Cotton t-shirt |    25 |          100 |    90 |          20 | CLOTHING |
+      | Jeans   | Denim jeans    |    60 |           50 |    45 |          10 | CLOTHING |
+      | Novel   | Fiction book   |    15 |           30 |    28 |           5 | TOYS     |
     When I filter products by category "CLOTHING"
     Then I should receive a 200 response
     And I should receive 2 products
@@ -181,10 +192,10 @@ Feature: Product Management
   Scenario: Retrieve products with price range filter
     Given I am an anonymous user
     And the following products exist:
-      | name      | description   | price | initialStock | stock | category    |
-      | Product A | Description A |    50 |          100 |    90 | ELECTRONICS |
-      | Product B | Description B |   150 |           50 |    45 | ELECTRONICS |
-      | Product C | Description C |   250 |           30 |    25 | ELECTRONICS |
+      | name      | description   | price | initialStock | stock | minimumStock | category    |
+      | Product A | Description A |    50 |          100 |    90 |          20 | ELECTRONICS |
+      | Product B | Description B |   150 |           50 |    45 |          10 | ELECTRONICS |
+      | Product C | Description C |   250 |           30 |    25 |           5 | ELECTRONICS |
     When I filter products with price range from 100 to 200
     Then I should receive a 200 response
     And I should receive 1 products
@@ -197,6 +208,7 @@ Feature: Product Management
       | price        |            99.99 |
       | initialStock |               50 |
       | stock        |               45 |
+      | minimumStock |               10 |
       | category     | ELECTRONICS      |
     When I retrieve the product by its ID
     Then I should receive a 200 response
@@ -215,6 +227,7 @@ Feature: Product Management
       | price        |               100.00 |
       | initialStock |                   50 |
       | stock        |                   45 |
+      | minimumStock |                   10 |
       | category     | ELECTRONICS          |
     When I update the product with the following details:
       | name         | Updated Product     |
@@ -222,6 +235,7 @@ Feature: Product Management
       | price        |              120.00 |
       | initialStock |                  60 |
       | stock        |                  55 |
+      | minimumStock |                  15 |
       | category     | TOYS                |
     Then I should receive a 200 response
 
@@ -238,6 +252,7 @@ Feature: Product Management
       | price        |             50.00 |
       | initialStock |                20 |
       | stock        |                15 |
+      | minimumStock |                 5 |
       | category     | ELECTRONICS       |
     When I delete the product
     And I should receive a 204 response
@@ -250,11 +265,11 @@ Feature: Product Management
   Scenario: Complex filtering with multiple criteria
     Given I am an anonymous user
     And the following products exist:
-      | name          | description      | price | initialStock | stock | category    |
-      | Gaming Laptop | High-end gaming  |  1500 |            5 |     3 | ELECTRONICS |
-      | Office Laptop | Business laptop  |   800 |           15 |    12 | ELECTRONICS |
-      | Gaming Mouse  | RGB gaming mouse |    80 |           50 |    45 | ELECTRONICS |
-      | Office Chair  | Ergonomic chair  |   200 |           20 |    18 | HOME        |
+      | name          | description      | price | initialStock | stock | minimumStock | category    |
+      | Gaming Laptop | High-end gaming  |  1500 |            5 |     3 |           2 | ELECTRONICS |
+      | Office Laptop | Business laptop  |   800 |           15 |    12 |           5 | ELECTRONICS |
+      | Gaming Mouse  | RGB gaming mouse |    80 |           50 |    45 |           5 | ELECTRONICS |
+      | Office Chair  | Ergonomic chair  |   200 |           20 |    18 |           5 | HOME        |
     When I filter products with:
       | name     | gaming      |
       | category | ELECTRONICS |
