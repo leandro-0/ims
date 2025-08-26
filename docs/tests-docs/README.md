@@ -72,12 +72,81 @@ Se implementaron múltiples escenarios de prueba con Cucumber con el objetivo de
 - Existente: 204 No Content indicando que fue eliminado correctamente
 - No Existente: 404 Not Found
 
+### Escenarios de Movimiento de Stock
+
+#### Seguir movimiento de stock en la creación de un producto
+
+- Escenario: Track stock movement on product creation
+- Resultado Esperado: 201 Created, y la informacion del movimiento
+
+#### Seguir movimiento de stock en la edición de un producto
+
+- Escenario: Track stock movement on product creation
+- Resultado Esperado: 201 Created, y la informacion del movimiento
+
+#### Seguir movimiento de stock en la eliminación de un producto
+
+- Escenario: Track stock movement on product deletion
+- Resultado Esperado: 204 No content, y la informacion del movimiento
+
+### Escenarios de Notificación de Stock Bajo
+
+#### Generar notificación de stock bajo cuando el stock cae debajo del minimo
+
+- Escenario: Generate low stock notification when stock falls below minimum
+- Resultado Esperado: 200 ok, y la notificacion con la información del producto con el stock minimo y el stock que causo la notificación
+
+#### Recuperar las notificaciones con paginacion
+
+- Escenario: Retrieve low stock notifications with pagination
+- Resultado Esperado: 200 ok, y la pagina 0 que contiene 5 notificaciones de un total de 6
+
+#### No generar notificación de stock bajo cuando el stock esta arriba del minimo
+
+- Escenario: No low stock notification when stock is above minimum
+- Resultado Esperado: 200 ok, y ninguna notificación
+
+#### Multiples notificaciones para el mismo producto
+
+- Escenario: Multiple low stock notifications for the same product
+- Resultado Esperado: 200 ok, la notificacion con la información del producto con el stock minimo y el stock que causo la notificación, seguido de 200 ok, y una nueva notificacion con la información del producto con el stock minimo y el stock que causo la segunda notificación 
+
 ### Resultados
 
-Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra en la siguiente imagen:
+Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra en las siguientes imagenes:
 
-![cucumber-tests-passed](cucumber-tests.png)
+![cucumber-tests-passed](cucumber-tests-0.png)
+![cucumber-tests-passed](cucumber-tests-1.png)
 
 ## Pruebas de Navegadores con Playwright
 
-Proximamente...
+Se implementaron pruebas end-to-end utilizando Playwright para validar el funcionamiento de la interfaz de usuario y las interacciones del usuario en el navegador. Las pruebas cubren los siguientes aspectos:
+
+### Autenticación y Seguridad
+- Verificación del flujo de inicio de sesión con Keycloak
+- Validación de elementos visibles para usuarios autenticados
+- Comprobación de restricciones para usuarios invitados
+
+### Gestión de Productos
+- Visualización de la página de productos
+- Validación de filtros y elementos de búsqueda
+- Verificación de permisos en acciones CRUD
+- Comprobación de la estructura de la tabla de productos
+
+### Panel de Control (Dashboard)
+- Validación de elementos principales del dashboard
+- Verificación de métricas de inventario
+- Comprobación de la tabla de productos con stock bajo
+- Pruebas de paginación
+
+### Movimientos de Stock
+- Visualización de la página de movimientos
+- Validación de la estructura de la tabla
+- Comprobación de carga de datos de movimientos
+- Verificación de información detallada de movimientos
+
+### Navegación
+- Verificación de elementos de la barra de navegación
+- Pruebas de navegación entre páginas
+- Validación de elementos UI según el estado de autenticación
+- Comprobación de botones de notificaciones y cierre de sesión
