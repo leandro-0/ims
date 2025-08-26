@@ -51,22 +51,51 @@ jobs:
           docker compose --profile test up -d
 
           # Wait for services to be ready
+          echo "Waiting for services to start..."
           sleep 45
 
+          echo "Checking running containers:"
           docker ps
+
+          echo "Checking service health:"
+          docker compose --profile test ps
+
+          # Verify PostgreSQL is ready
+          echo "Waiting for PostgreSQL to be ready..."
+          timeout 120 bash -c 'until docker exec ims-database-test pg_isready -U imsadmin -d ims; do sleep 2; done'
+
+          # Verify Keycloak is ready
+          echo "Waiting for Keycloak to be ready..."
+          timeout 180 bash -c 'until curl -f http://localhost:7080/health/ready; do sleep 5; done'
 
       - name: Clean and build project
         working-directory: backend
-        run: ./gradlew clean build -x test
+        run: |
+          echo "Verifying services are still running before build:"
+          docker compose --profile test ps
+          ./gradlew clean build -x test
 
       - name: Run Cucumber tests
         working-directory: backend
-        run: ./gradlew cucumberTest
+        run: |
+          echo "Verifying services are still running before Cucumber tests:"
+          docker compose --profile test ps
+          ./gradlew cucumberTest
 
       - name: Run Unit tests
         working-directory: backend
         if: always()
-        run: ./gradlew unitTest
+        run: |
+          echo "Verifying services are still running before Unit tests:"
+          docker compose --profile test ps
+          ./gradlew unitTest
+
+      - name: Stop test infrastructure
+        working-directory: backend
+        if: always()
+        run: |
+          echo "Stopping test infrastructure:"
+          docker compose --profile test down -v
 
       - name: Upload Cucumber test results
         uses: actions/upload-artifact@v4
