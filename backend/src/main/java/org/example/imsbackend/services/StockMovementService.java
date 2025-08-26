@@ -93,4 +93,8 @@ public class StockMovementService {
                         category -> stockMovementRepository.countByProductCategory(category)
                 ));
     }
+
+    public long count(){ return stockMovementRepository.count(); }
+
+    public void deleteAll(){ stockMovementRepository.deleteAll(); }
 }

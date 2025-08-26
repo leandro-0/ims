@@ -40,4 +40,8 @@ public class LowStockNotificationService {
         notification.setMinimumStock(product.getMinimumStock());
         return notification;
     }
+
+    public long count(){ return lowStockNotificationRepository.count(); }
+
+    public void deleteAll(){ lowStockNotificationRepository.deleteAll(); }
 }
