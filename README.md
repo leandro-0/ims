@@ -30,7 +30,7 @@
 
 ### Gestión de Calidad
 
-- [Indicadores de Calidad]()
+- [Indicadores de Calidad](docs/quality-indicators/README.md)
 
 ### Evaluación Post-Implementación
 
