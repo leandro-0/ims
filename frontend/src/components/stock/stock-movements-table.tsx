@@ -4,6 +4,7 @@ import TablePagination from "../table-pagination"
 import { StockMovement } from "@/services/stock-service"
 import { Badge } from "../ui/badge"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { formatISODate } from "@/lib/utils"
 
 interface StockMovementsTableProps {
   movements: StockMovement[]
@@ -67,7 +68,7 @@ export default function StockMovementsTable(props: StockMovementsTableProps) {
               ) : (
                 props.movements.map((mov, i) => (
                   <TableRow key={`mov-${i}`}>
-                    <TableCell>{new Date(mov.date).toLocaleString()}</TableCell>
+                    <TableCell>{formatISODate(mov.date)}</TableCell>
                     <TableCell>
                       <Badge
                         variant={mov.type === "INCOMING" ? "outline" : "destructive"}

@@ -1,3 +1,4 @@
+import { getDateWithCorrectTz } from "@/lib/utils"
 import { LowStockNotification } from "@/services/notification-service"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale/es"
@@ -27,7 +28,7 @@ export default function NotificationItem(props: NotificationItemProps) {
             El stock lleg&oacute; a <span className="font-semibold">{props.notification.currentStock}</span>, siendo <span className="font-semibold">{props.notification.minimumStock}</span> el m&iacute;nimo.
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            {formatDistanceToNow(new Date(props.notification.date), { addSuffix: true, locale: es })}
+            {formatDistanceToNow(getDateWithCorrectTz(props.notification.date), { addSuffix: true, locale: es })}
           </p>
         </div>
       </div>
