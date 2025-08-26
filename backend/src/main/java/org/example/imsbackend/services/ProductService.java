@@ -26,26 +26,23 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public Page<Product> getAllProducts(ProductFilter filter) {
-        Specification<Product> spec = null;
+        Specification<Product> spec = Specification.where(null);
 
         if (filter.getName() != null && !filter.getName().isEmpty()) {
-            spec = (root, query, cb) ->
-                    cb.like(cb.lower(root.get("name")), "%" + filter.getName().toLowerCase() + "%");
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("name")), "%" + filter.getName().toLowerCase() + "%"));
         }
 
         if (filter.getCategories() != null && !filter.getCategories().isEmpty()) {
-            Specification<Product> categorySpec = (root, query, cb) -> root.get("category").in(filter.getCategories());
-            spec = spec == null ? categorySpec : spec.and(categorySpec);
+            spec = spec.and((root, query, cb) -> root.get("category").in(filter.getCategories()));
         }
 
         if (filter.getMinPrice() != null) {
-            Specification<Product> minPriceSpec = (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), filter.getMinPrice());
-            spec = spec == null ? minPriceSpec : spec.and(minPriceSpec);
+            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("price"), filter.getMinPrice()));
         }
 
         if (filter.getMaxPrice() != null) {
-            Specification<Product> maxPriceSpec = (root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), filter.getMaxPrice());
-            spec = spec == null ? maxPriceSpec : spec.and(maxPriceSpec);
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("price"), filter.getMaxPrice()));
         }
 
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize());
