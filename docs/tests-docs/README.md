@@ -78,6 +78,45 @@ Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra 
 
 ![cucumber-tests-passed](cucumber-tests.png)
 
+### Escenarios de Movimiento de Stock
+
+#### Seguir movimiento de stock en la creación de un producto
+
+- Escenario: Track stock movement on product creation
+- Resultado Esperado: 201 Created, y la informacion del movimiento
+
+#### Seguir movimiento de stock en la edición de un producto
+
+- Escenario: Track stock movement on product creation
+- Resultado Esperado: 201 Created, y la informacion del movimiento
+
+#### Seguir movimiento de stock en la eliminación de un producto
+
+- Escenario: Track stock movement on product deletion
+- Resultado Esperado: 204 No content, y la informacion del movimiento
+
+### Escenarios de Notificación de Stock Bajo
+
+#### Generar notificación de stock bajo cuando el stock cae debajo del minimo
+
+- Escenario: Generate low stock notification when stock falls below minimum
+- Resultado Esperado: 200 ok, y la notificacion con la información del producto con el stock minimo y el stock que causo la notificación
+
+#### Recuperar las notificaciones con paginacion
+
+- Escenario: Retrieve low stock notifications with pagination
+- Resultado Esperado: 200 ok, y la pagina 0 que contiene 5 notificaciones de un total de 6
+
+#### No generar notificación de stock bajo cuando el stock esta arriba del minimo
+
+- Escenario: No low stock notification when stock is above minimum
+- Resultado Esperado: 200 ok, y ninguna notificación
+
+#### Multiples notificaciones para el mismo producto
+
+- Escenario: Multiple low stock notifications for the same product
+- Resultado Esperado: 200 ok, la notificacion con la información del producto con el stock minimo y el stock que causo la notificación, seguido de 200 ok, y una nueva notificacion con la información del producto con el stock minimo y el stock que causo la segunda notificación 
+
 ## Pruebas de Navegadores con Playwright
 
 Proximamente...
