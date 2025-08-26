@@ -16,7 +16,13 @@
 ### Documentación
 
 - [Documentación de Requisitos](docs/requirements/README.md)
+- [Documentación Técnica](docs/tech-docs/README.md)
 - [Guía de Pruebas](docs/tests-docs/README.md)
+
+### Revisión y Validación
+
+- [Revisiones de Código](docs/code-revisions/README.md)
+- [Validación de Requisitos](docs/code-revisions/README.md)
 
 ### Monitoreo y Mantenimiento
 
