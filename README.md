@@ -1,4 +1,4 @@
-# Inventory Management System (IMS)
+# Inventory Management System (IMS) Test
 
 ## Desarrolladores
 
