@@ -45,12 +45,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/ims-${{ matrix.component }}
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha,prefix={{branch}}-,enable={{is_default_branch}}
-            type=sha,prefix=pr-{{branch}}-,enable={{is_pr}}
 
       - name: Build and push ${{ matrix.component }} image
         id: build
