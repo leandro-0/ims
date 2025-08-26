@@ -32,6 +32,8 @@ jobs:
         env:
           KC_HOSTNAME: ${{ vars.KEYCLOAK_HOSTNAME }}
           KC_HOSTNAME_PORT: ${{ vars.KEYCLOAK_PORT }}
+          KC_HTTP_PORT: ${{ vars.KEYCLOAK_PORT }}
+          KEYCLOAK_PORT: ${{ vars.KEYCLOAK_PORT }}
           KEYCLOAK_ADMIN: ${{ secrets.KEYCLOAK_ADMIN_USER }}
           KEYCLOAK_ADMIN_PASSWORD: ${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}
           KC_HEALTH_ENABLED: "true"
