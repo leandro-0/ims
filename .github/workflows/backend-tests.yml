@@ -6,12 +6,12 @@ on:
 jobs:
   backend-tests:
     environment: testing-backend
-    name: Run Backend Tests (Cucumber and Unit Tests)
+    name: "Regression tests for backend: Cucumber and Unit Tests"
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     services:
-      postgres:
+      postgres-test:
         image: postgres:latest
         env:
           POSTGRES_DB: ${{ vars.POSTGRES_DB }}
@@ -25,8 +25,10 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
-      keycloak:
-        image: quay.io/keycloak/keycloak:26.2.5
+      keycloak-test:
+        image: leandro0/keycloak-test-backend:latest
+        ports:
+          - ${{ vars.KEYCLOAK_PORT }}:${{ vars.KEYCLOAK_PORT }}
         env:
           KC_HOSTNAME: ${{ vars.KEYCLOAK_HOSTNAME }}
           KC_HOSTNAME_PORT: ${{ vars.KEYCLOAK_PORT }}
@@ -36,13 +38,11 @@ jobs:
           KC_LOG_LEVEL: info
           KC_HTTP_ENABLED: "true"
           KC_HOSTNAME_STRICT: "false"
-        ports:
-          - ${{ vars.KEYCLOAK_PORT }}:8080
         options: >-
-          --health-cmd "curl -f http://localhost:8080/health/ready || exit 1"
-          --health-interval 30s
-          --health-timeout 10s
-          --health-retries 10
+          --health-cmd="[ -f /tmp/HealthCheck.java ] || echo 'public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(java.net.HttpURLConnection.HTTP_OK == ((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() ? 0 : 1); } }' > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:${{ vars.KEYCLOAK_PORT }}/health/live"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
 
     steps:
       - name: Checkout repository
@@ -78,31 +78,6 @@ jobs:
           echo "KEYCLOAK_JWK_SET_URI=${{ vars.KEYCLOAK_JWK_SET_URI }}" >> .env
           echo "KEYCLOAK_LOGIN_URI=${{ vars.KEYCLOAK_LOGIN_URI }}" >> .env
           echo "IMS_SHOULD_POPULATE=${{ vars.IMS_SHOULD_POPULATE }}" >> .env
-
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for services to be ready..."
-          sleep 30
-          echo "Services should be ready now"
-
-      - name: Setup Keycloak realm
-        run: |
-          # Wait for Keycloak to be fully ready
-          echo "Waiting for Keycloak to be fully ready..."
-          sleep 20
-
-          # Get Keycloak container ID
-          KEYCLOAK_CONTAINER=$(docker ps -q --filter "ancestor=quay.io/keycloak/keycloak:26.2.5")
-          echo "Keycloak container: $KEYCLOAK_CONTAINER"
-
-          # Copy realm file to container
-          docker cp backend/keycloak/realm-test.json $KEYCLOAK_CONTAINER:/tmp/realm-test.json
-
-          # Get admin token and import realm using Keycloak Admin CLI
-          docker exec $KEYCLOAK_CONTAINER /opt/keycloak/bin/kc.sh import --file /tmp/realm-test.json --override true || true
-
-          echo "Realm import completed"
-          sleep 5
 
       - name: Clean and build project
         working-directory: backend
