@@ -120,4 +120,33 @@ Todas las pruebas realizadas con Cucumber pasaron exitosamente, como se muestra 
 
 ## Pruebas de Navegadores con Playwright
 
-Proximamente...
+Se implementaron pruebas end-to-end utilizando Playwright para validar el funcionamiento de la interfaz de usuario y las interacciones del usuario en el navegador. Las pruebas cubren los siguientes aspectos:
+
+### Autenticación y Seguridad
+- Verificación del flujo de inicio de sesión con Keycloak
+- Validación de elementos visibles para usuarios autenticados
+- Comprobación de restricciones para usuarios invitados
+
+### Gestión de Productos
+- Visualización de la página de productos
+- Validación de filtros y elementos de búsqueda
+- Verificación de permisos en acciones CRUD
+- Comprobación de la estructura de la tabla de productos
+
+### Panel de Control (Dashboard)
+- Validación de elementos principales del dashboard
+- Verificación de métricas de inventario
+- Comprobación de la tabla de productos con stock bajo
+- Pruebas de paginación
+
+### Movimientos de Stock
+- Visualización de la página de movimientos
+- Validación de la estructura de la tabla
+- Comprobación de carga de datos de movimientos
+- Verificación de información detallada de movimientos
+
+### Navegación
+- Verificación de elementos de la barra de navegación
+- Pruebas de navegación entre páginas
+- Validación de elementos UI según el estado de autenticación
+- Comprobación de botones de notificaciones y cierre de sesión
