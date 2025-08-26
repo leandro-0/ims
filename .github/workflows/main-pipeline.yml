@@ -3,8 +3,15 @@ name: Main Pipeline
 on:
   push:
     branches: [main, traefik]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+
   pull_request:
     branches: [main, traefik]
+    paths:
+      - "frontend/**"
+      - "backend/**"
   workflow_dispatch:
 
 permissions:
