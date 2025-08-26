@@ -139,6 +139,7 @@ export default function InventoryDashboard() {
           description={'Usuarios con mayor actividad en las últimas 24 horas'}
           valueUnit='movimientos'
           items={data.movementsLast24Hours.topUsers}
+          noValueText='No se han registrado movimientos'
         />
       </div>
 
