@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth"
 import { jwtDecode } from "jwt-decode"
+import { JWT } from "next-auth/jwt"
 
 const clientId = process.env.KEYCLOAK_CLIENT_ID || "ims"
 const serverIssuer = process.env.KEYCLOAK_ISSUER_SERVER || process.env.KEYCLOAK_ISSUER || "http://localhost:7080/realms/ims-realm"
@@ -15,16 +16,39 @@ interface KeycloakProfile {
   }
 }
 
-async function validateToken(token: string): Promise<boolean> {
+async function refreshToken(token: JWT): Promise<JWT | null> {
   try {
-    const response = await fetch(`${serverIssuer}/protocol/openid-connect/userinfo`, {
+    const response = await fetch(`${serverIssuer}/protocol/openid-connect/token`, {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        client_id: clientId,
+        refresh_token: token.refreshToken || '',
+      }),
     })
-    return response.ok
-  } catch (error) {
-    return false
+
+    if (!response.ok) {
+      return null
+    }
+
+    const refreshedTokens = await response.json()
+    token.accessToken = refreshedTokens.access_token
+    token.refreshToken = refreshedTokens.refresh_token || token.refreshToken
+    token.expiresAt = Date.now() + (Number(refreshedTokens.expires_in) || 3600) * 1000
+
+    const decodedToken = jwtDecode(refreshedTokens?.access_token)
+    if (decodedToken && typeof decodedToken !== 'string') {
+      token.roles = decodedToken?.resource_access.ims.roles || []
+    }
+
+    return token
+  }
+  catch (error) {
+    console.error('Error refreshing access token:', error)
+    return null
   }
 }
 
@@ -79,6 +103,14 @@ export const authOptions: NextAuthOptions = {
       if (profile) {
         const keycloakProfile = profile as KeycloakProfile
         token.username = keycloakProfile.preferred_username
+      }
+
+      if (token.accessToken && token.expiresAt && Date.now() > token.expiresAt) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('\n\nAccess token expired, refreshing...\n\n')
+        }
+
+        return await refreshToken(token)
       }
 
       return token

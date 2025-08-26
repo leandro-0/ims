@@ -7,9 +7,18 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 
+import org.example.imsbackend.dto.LowStockNotificationFilter;
+import org.example.imsbackend.dto.StockMovementFilter;
 import org.example.imsbackend.enums.Category;
+import org.example.imsbackend.enums.StockMovementAction;
+import org.example.imsbackend.enums.StockMovementType;
+import org.example.imsbackend.models.LowStockNotification;
 import org.example.imsbackend.models.Product;
+import org.example.imsbackend.models.ProductName;
+import org.example.imsbackend.models.StockMovement;
+import org.example.imsbackend.services.LowStockNotificationService;
 import org.example.imsbackend.services.ProductService;
+import org.example.imsbackend.services.StockMovementService;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -19,32 +28,49 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
-public class ProductStepDefinitions {
+public class StepDefinitions {
 
     @LocalServerPort
     private int port;
-
-    private TestRestTemplate restTemplate = new TestRestTemplate();
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    private final ProductService productService;
-
     private ResponseEntity<String> lastResponse;
+    private TestRestTemplate restTemplate = new TestRestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private String currentToken;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SS");
+    // Product elements
+    private String baseProductUrl;
+    private final ProductService productService;
     private List<Product> createdProducts = new ArrayList<>();
     private Product lastCreatedProduct;
-    private String baseUrl;
-    private String currentToken;
+    // LowStockNotification elements
+    private String baseLowStockNotificationUrl;
+    private final LowStockNotificationService lowStockNotificationService;
+    private List<LowStockNotification> createdNotifications = new ArrayList<>();
+    private LowStockNotification lastCreatedNotification;
+    // StockMovement elements
+    private String baseStockMovementUrl;
+    private final StockMovementService stockMovementService;
+    private List<StockMovement> createdMovements = new ArrayList<>();
+    private StockMovement lastCreatedMovement;
 
-    public ProductStepDefinitions(ProductService productService) {
+    public StepDefinitions(ProductService productService, LowStockNotificationService lowStockNotificationService, StockMovementService stockMovementService) {
         this.productService = productService;
+        this.lowStockNotificationService = lowStockNotificationService;
+        this.stockMovementService = stockMovementService;
     }
-
-    // region Helpers methods
+    /* Helper methods */
+    // General Helper methods
     private void setIfNotEmpty(Map<String, String> data, String key, Consumer<String> setter) {
         String value = data.get(key);
         if (value != null && !value.trim().isEmpty()) {
@@ -52,6 +78,14 @@ public class ProductStepDefinitions {
         }
     }
 
+    private Map<String, Object> getResponseMap() {
+        try {
+            return objectMapper.readValue(lastResponse.getBody(), Map.class);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse response", e);
+        }
+    }
+    // Helper product methods
     private Product createProductFromData(Map<String, String> data) {
         Product product = new Product();
     
@@ -91,13 +125,13 @@ public class ProductStepDefinitions {
     }
 
     private void deleteProduct(UUID productId) {
-        String url = baseUrl + "/" + productId;
+        String url = baseProductUrl + "/" + productId;
         lastResponse = restTemplate.exchange(url, HttpMethod.DELETE, null, String.class);
     }
 
     private ResponseEntity<String> updateProduct(Product product, UUID id) {
         final var request = getRequest(product);
-        String url = baseUrl + "/" + id;
+        String url = baseProductUrl + "/" + id;
         return restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
     }
 
@@ -120,21 +154,13 @@ public class ProductStepDefinitions {
         addFilterParam(queryParams, filters, "maxPrice", "maxPrice");
         
 
-        String filterEndpoint = baseUrl + "/search";
+        String filterEndpoint = baseProductUrl + "/search";
         return queryParams.isEmpty() ? filterEndpoint : filterEndpoint + "?" + String.join("&", queryParams);
     }
 
     private void addFilterParam(List<String> queryParams, Map<String, String> filters, String filterKey, String paramName) {
         if (filters.containsKey(filterKey) && !filters.get(filterKey).isEmpty()) {
             queryParams.add(paramName + "=" + filters.get(filterKey));
-        }
-    }
-
-    private Map<String, Object> getResponseMap() {
-        try {
-            return objectMapper.readValue(lastResponse.getBody(), Map.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse response", e);
         }
     }
 
@@ -147,18 +173,120 @@ public class ProductStepDefinitions {
         List<Map<String, Object>> products = getProductsFromResponse();
         products.forEach(validator);
     }
-    // endregion
 
+    // LowStockNotification Helper methods
+    private void createLowStockNotification(Map<String, String> data) {
+        LowStockNotification notification = new LowStockNotification();
+        notification.setDate(LocalDateTime.parse(data.get("date"), DATE_TIME_FORMATTER));
+        notification.setProduct(new ProductName(UUID.randomUUID(), data.get("productName")));
+        notification.setCurrentStock(Integer.parseInt(data.get("currentStock")));
+        notification.setMinimumStock(Integer.parseInt(data.get("minimumStock")));
+        lastCreatedNotification = lowStockNotificationService.save(notification);
+        createdNotifications.add(lastCreatedNotification);
+    }
+
+    private String buildLowStockNotificationUrl(String path) {
+        return String.format(baseLowStockNotificationUrl, port, path);
+    }
+
+    // StockMovement Helper methods
+    private void createStockMovement(Map<String, String> data) {
+        StockMovement movement = new StockMovement();
+        movement.setType(StockMovementType.valueOf(data.get("type")));
+        movement.setQuantity(Integer.parseInt(data.get("quantity")));
+        movement.setAction(StockMovementAction.valueOf(data.get("action")));
+        movement.setUsername(data.get("username"));
+        movement.setDate(LocalDateTime.parse(data.get("date"), DATE_TIME_FORMATTER));
+        movement.setProduct(new ProductName(UUID.randomUUID(), data.get("product")));
+        lastCreatedMovement = stockMovementService.save(movement);
+        createdMovements.add(lastCreatedMovement);
+    }
+
+    private String buildStockMomeventUrl(String path) {
+        return String.format(baseStockMovementUrl, port, path);
+    }
+
+    /* General Steps */
+    //Given steps
     @Given("the system is ready")
     public void theSystemIsReady() {
-        baseUrl = "http://localhost:" + port + "/api/v1/products";
+        baseProductUrl = "http://localhost:" + port + "/api/v1/products";
+        baseLowStockNotificationUrl = "http://localhost:" + port + "/api/v1/low-stock-notifications";
+        baseStockMovementUrl = "http://localhost:" + port + "/api/v1/stock-movements";
     }
+
+    @Given("I am an anonymous user")
+    public void IAmAnAnonymousUser() {
+        currentToken = null;
+        restTemplate.getRestTemplate().getInterceptors().clear();
+    }
+
+    @Given("I am an authenticated user with credentials {string} and {string}")
+    public void IAmAnAuthenticatedUserWithCredentials(String username, String password) {
+        if (currentToken != null)
+            return;
+
+        String authUrl = "http://localhost:7080/realms/ims-realm/protocol/openid-connect/token";
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "password");
+        body.add("username", username);
+        body.add("password", password);
+        body.add("client_id", "ims");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+        ResponseEntity<Map> response = restTemplate.postForEntity(authUrl, request, Map.class);
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            currentToken = (String) response.getBody().get("access_token");
+            restTemplate.getRestTemplate().getInterceptors().add((request1, body1, execution) -> {
+                request1.getHeaders().setBearerAuth(currentToken);
+                return execution.execute(request1, body1);
+            });
+        } else {
+            throw new RuntimeException("Failed to authenticate user");
+        }
+    }
+    // When steps
+
+    // Then steps
+    @Then("I should receive a {int} response")
+    public void iShouldReceiveAResponse(int expectedStatus) {
+        Assertions.assertEquals(expectedStatus, lastResponse.getStatusCode().value());
+    }
+
+    @Then("the pagination information should indicate page {int}")
+    public void thePaginationInformationShouldIndicatePage(int expectedPage) {
+        Map<String, Object> responseMap = getResponseMap();
+        Integer currentPage = (Integer) responseMap.get("number");
+        Assertions.assertEquals(expectedPage, currentPage.intValue());
+    }
+
+    @Then("the total elements should be {int}")
+    public void theTotalElementsShouldBe(int expectedTotal) {
+        Map<String, Object> responseMap = getResponseMap();
+        Integer totalElements = (Integer) responseMap.get("totalElements");
+        Assertions.assertEquals(expectedTotal, totalElements.intValue());
+    }
+
+    /* Product Steps */
+    // Given steps
 
     @Given("the database is clean")
     public void theDatabaseIsClean() {
+        // Clean products
         productService.deleteAllProducts();
         createdProducts.clear();
         lastCreatedProduct = null;
+        // Clean low stock notifications
+        lowStockNotificationService.deleteAll();
+        createdNotifications.clear();
+        lastCreatedNotification = null;
+        // Clean stock movements
+        stockMovementService.deleteAll();
+        createdMovements.clear();
+        lastCreatedMovement = null;
     }
 
     @When("I create a product with the following details:")
@@ -166,7 +294,7 @@ public class ProductStepDefinitions {
         Map<String, String> productData = dataTable.asMap();
         Product product = createProductFromData(productData);
         final var request = getRequest(product);
-        lastResponse = restTemplate.postForEntity(baseUrl, request, String.class);
+        lastResponse = restTemplate.postForEntity(baseProductUrl, request, String.class);
         
         if (lastResponse.getStatusCode().is2xxSuccessful()) {
             lastCreatedProduct = checkProductResponse(lastResponse, true);
@@ -181,7 +309,7 @@ public class ProductStepDefinitions {
         for (Map<String, String> productData : productDataList) {
             Product product = createProductFromData(productData);
             final var request = getRequest(product);
-            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(baseProductUrl, request, String.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
                 checkProductResponse(response, true);
@@ -201,7 +329,7 @@ public class ProductStepDefinitions {
         Product product = createProductFromData(productData);
         
         final var request = getRequest(product);
-        ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, request, String.class);
+        ResponseEntity<String> response = restTemplate.postForEntity(baseProductUrl, request, String.class);
         
         if (response.getStatusCode().is2xxSuccessful()) {
             lastCreatedProduct = checkProductResponse(response, true);
@@ -220,7 +348,7 @@ public class ProductStepDefinitions {
             product.setPrice(50.0 + (i * 10));
             
             final var request = getRequest(product);
-            ResponseEntity<String> response = restTemplate.postForEntity(baseUrl, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(baseProductUrl, request, String.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
                 checkProductResponse(response, true);
@@ -228,32 +356,33 @@ public class ProductStepDefinitions {
         }
     }
 
+    // When steps
     @When("I retrieve all products")
     public void iRetrieveAllProducts() {
-        lastResponse = restTemplate.getForEntity(baseUrl + "/search", String.class);
+        lastResponse = restTemplate.getForEntity(baseProductUrl + "/search", String.class);
     }
 
     @When("I filter products by name {string}")
     public void iFilterProductsByName(String name) {
-        String url = baseUrl + "/search" + "?name=" + name;
+        String url = baseProductUrl + "/search" + "?name=" + name;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I filter products by category {string}")
     public void iFilterProductsByCategory(String category) {
-        String url = baseUrl + "/search" + "?categories=" + category;
+        String url = baseProductUrl + "/search" + "?categories=" + category;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I filter products with price range from {double} to {double}")
     public void iFilterProductsWithPriceRangeFromTo(double minPrice, double maxPrice) {
-        String url = baseUrl + "/search" + "?minPrice=" + minPrice + "&maxPrice=" + maxPrice;
+        String url = baseProductUrl + "/search" + "?minPrice=" + minPrice + "&maxPrice=" + maxPrice;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I retrieve products with page {int} and size {int}")
     public void iRetrieveProductsWithPageAndSize(int page, int size) {
-        String url = baseUrl + "/search" + "?page=" + page + "&size=" + size;
+        String url = baseProductUrl + "/search" + "?page=" + page + "&size=" + size;
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
@@ -269,13 +398,13 @@ public class ProductStepDefinitions {
         if (lastCreatedProduct == null) {
             throw new IllegalStateException("No product has been created yet to retrieve.");
         }
-        String url = baseUrl + "/" + lastCreatedProduct.getId() + "/details";
+        String url = baseProductUrl + "/" + lastCreatedProduct.getId() + "/details";
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
     @When("I retrieve a product with a non-existent ID")
     public void iRetrieveAProductWithANonExistentId() {
-        String url = baseUrl + "/" + UUID.randomUUID().toString() + "/details";
+        String url = baseProductUrl + "/" + UUID.randomUUID() + "/details";
         lastResponse = restTemplate.getForEntity(url, String.class);
     }
 
@@ -315,11 +444,7 @@ public class ProductStepDefinitions {
         deleteProduct(UUID.randomUUID());
     }
 
-    @Then("I should receive a {int} response")
-    public void iShouldReceiveAResponse(int expectedStatus) {
-        Assertions.assertEquals(expectedStatus, lastResponse.getStatusCode().value());
-    }
-
+    // Then steps
     @Then("I should receive {int} products")
     public void iShouldReceiveProducts(int expectedCount) {
         Map<String, Object> responseMap = getResponseMap();
@@ -354,20 +479,6 @@ public class ProductStepDefinitions {
         });
     }
 
-    @Then("the pagination information should indicate page {int}")
-    public void thePaginationInformationShouldIndicatePage(int expectedPage) {
-        Map<String, Object> responseMap = getResponseMap();
-        Integer currentPage = (Integer) responseMap.get("number");
-        Assertions.assertEquals(expectedPage, currentPage.intValue());
-    }
-
-    @Then("the total elements should be {int}")
-    public void theTotalElementsShouldBe(int expectedTotal) {
-        Map<String, Object> responseMap = getResponseMap();
-        Integer totalElements = (Integer) responseMap.get("totalElements");
-        Assertions.assertEquals(expectedTotal, totalElements.intValue());
-    }
-
     @Then("the product details should match the created product")
     public void theProductDetailsShouldMatchTheCreatedProduct() {
         try {
@@ -381,37 +492,104 @@ public class ProductStepDefinitions {
         }
     }
 
-    @Given("I am an anonymous user")
-    public void IAmAnAnonymousUser() {
-        currentToken = null;
-        restTemplate.getRestTemplate().getInterceptors().clear();
+    /* LowStockNotification  */
+    // Given steps
+    @Given("the following low stock notifications exist:")
+    public void theFollowingLowStockNotificationsExist(DataTable dataTable) {
+        baseLowStockNotificationUrl = buildLowStockNotificationUrl("/low-stock-notifications");
+        List<Map<String, String>> notifications = dataTable.asMaps();
+        notifications.forEach(this::createLowStockNotification);
     }
 
-    @Given("I am an authenticated user with credentials {string} and {string}")
-    public void IAmAnAuthenticatedUserWithCredentials(String username, String password) {
-        if (currentToken != null)
-            return;
-        
-        String authUrl = "http://localhost:7080/realms/ims-realm/protocol/openid-connect/token";
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "password");
-        body.add("username", username);
-        body.add("password", password);
-        body.add("client_id", "ims");
+    // When steps
+    @When("I retrieve low stock notifications with page {int} and size {int}")
+    public void iRetrieveLowStockNotificationsWithPageAndSize(int page, int size) {
+        String url = String.format("%s?page=%d&size=%d", baseLowStockNotificationUrl, page, size);
+        lastResponse = restTemplate.getForEntity(url, String.class);
+    }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(authUrl, request, Map.class);
+    // Then steps
+    @Then("I should receive {int} notifications")
+    public void iShouldReceiveNotifications(int expectedCount) {
+        assertNotNull(lastResponse);
+        assertNotNull(lastResponse.getBody());
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            currentToken = (String) response.getBody().get("access_token");
-            restTemplate.getRestTemplate().getInterceptors().add((request1, body1, execution) -> {
-                request1.getHeaders().setBearerAuth(currentToken);
-                return execution.execute(request1, body1);
-            });
-        } else {
-            throw new RuntimeException("Failed to authenticate user");
+        Map<String, Object> responseMap = getResponseMap();
+        List<Map<String, Object>> content = (List<Map<String, Object>>) responseMap.get("content");
+        assertEquals(expectedCount, content.size());
+    }
+
+    @Then("a low stock notification should be created with:")
+    public void aLowStockNotificationShouldBeCreatedWith(DataTable dataTable) {
+        Map<String, String> expectedData = dataTable.asMap();
+        List<LowStockNotification> notifications = lowStockNotificationService.findAll(new LowStockNotificationFilter(0,1)).getContent();
+
+        // Get the latest notification
+        LowStockNotification latestNotification = notifications.getFirst();
+        // print for debugging
+        System.out.println("Latest Notification stock: " + latestNotification.getCurrentStock());
+        System.out.println("Expected stock: " + expectedData.get("currentStock"));
+
+        assertEquals(Integer.parseInt(expectedData.get("currentStock")), latestNotification.getCurrentStock());
+        assertEquals(Integer.parseInt(expectedData.get("minimumStock")), latestNotification.getMinimumStock());
+        assertEquals(expectedData.get("productName"), latestNotification.getProduct().getName());
+        assertNotNull(latestNotification.getDate());
+    }
+
+    @Then("no low stock notification should be created")
+    public void noLowStockNotificationShouldBeCreated() {
+        // Store initial notification count
+        long initialCount = lowStockNotificationService.count();
+
+        // Wait a small amount of time for any async operations
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
+
+        // Verify no new notifications were created
+        assertEquals(initialCount, lowStockNotificationService.count());
+    }
+
+    /* StockMovement */
+    // Given steps
+    @Given("the following stock movements exist:")
+    public void theFollowingStockMovementsExist(DataTable dataTable) {
+        baseStockMovementUrl = buildStockMomeventUrl("/stock-movements");
+        List<Map<String, String>> movements = dataTable.asMaps();
+        movements.forEach(this::createStockMovement);
+    }
+    // When steps
+    @When("I retrieve stock movements with page {int} and size {int}")
+    public void iRetrieveStockMovementsWithPageAndSize(int page, int size) {
+        String url = String.format("%s?page=%d&size=%d", baseStockMovementUrl, page, size);
+        lastResponse = restTemplate.getForEntity(url, String.class);
+    }
+
+    // Then steps
+    @Then("I should receive {int} stock movements")
+    public void iShouldReceiveStockMovements(int expectedCount) {
+        assertNotNull(lastResponse);
+        assertNotNull(lastResponse.getBody());
+
+        Map<String, Object> responseMap = getResponseMap();
+        List<Map<String, Object>> content = (List<Map<String, Object>>) responseMap.get("content");
+        assertEquals(expectedCount, content.size());
+    }
+
+    @Then("a stock movement should be created with:")
+    public void aStockMovementShouldBeCreatedWith(DataTable dataTable) {
+        Map<String, String> expectedData = dataTable.asMap();
+        List<StockMovement> movements = stockMovementService.getAllStockMovements(new StockMovementFilter(0, 1)).getContent();
+
+        // Get the latest movement
+        StockMovement latestMovement = movements.getFirst();
+
+        assertEquals(StockMovementType.valueOf(expectedData.get("type")), latestMovement.getType());
+        assertEquals(Integer.parseInt(expectedData.get("quantity")), latestMovement.getQuantity());
+        assertEquals(StockMovementAction.valueOf(expectedData.get("action")), latestMovement.getAction());
+        assertEquals(expectedData.get("username"), latestMovement.getUsername());
+        assertNotNull(latestMovement.getDate());
     }
 }

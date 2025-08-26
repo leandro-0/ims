@@ -42,6 +42,11 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    //actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    //prometheus
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'org.mapstruct:mapstruct:1.6.3'
@@ -51,8 +56,34 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-junit:7.23.0'
     testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.23.0'
     testImplementation 'io.cucumber:cucumber-spring:7.23.0'
+
+    // h2 for testing
+    testRuntimeOnly 'com.h2database:h2'
+    testImplementation 'org.mockito:mockito-core:5.19.0'
+
 }
 
-tasks.named('test') {
+test {
+    useJUnit()
+    include '**/CucumberTest*'
+}
+
+tasks.register('cucumberTest', Test) {
+    useJUnit()
+    include '**/CucumberTest*'
+    exclude '**/*ServiceTest*'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+tasks.register('unitTest', Test) {
     useJUnitPlatform()
+    include '**/*ServiceTest*'
+    exclude '**/CucumberTest*'
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
 }

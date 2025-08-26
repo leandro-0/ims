@@ -1,0 +1,73 @@
+name: Playwright Tests
+on:
+  workflow_call:
+jobs:
+  test:
+    environment: testing
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env file for backend
+        working-directory: ./backend
+        run: |
+          echo "POSTGRES_HOST=${{ vars.POSTGRES_HOST }}" > .env
+          echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_PORT=${{ vars.POSTGRES_PORT }}" >> .env
+          echo "POSTGRES_URL=${{ secrets.POSTGRES_URL }}" >> .env
+          echo "KEYCLOAK_PORT=${{ vars.KEYCLOAK_PORT }}" >> .env
+          echo "KEYCLOAK_ADMIN_USER=${{ secrets.KEYCLOAK_ADMIN_USER }}" >> .env
+          echo "KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}" >> .env
+          echo "KEYCLOAK_HOSTNAME=${{ vars.KEYCLOAK_HOSTNAME }}" >> .env
+          echo "KEYCLOAK_VOLUME_PATH=${{ vars.KEYCLOAK_VOLUME_PATH }}" >> .env
+          echo "KEYCLOAK_ISSUER_URI=${{ vars.KEYCLOAK_ISSUER_URI }}" >> .env
+          echo "KEYCLOAK_JWK_SET_URI=${{ vars.KEYCLOAK_JWK_SET_URI }}" >> .env
+          echo "KEYCLOAK_LOGIN_URI=${{ vars.KEYCLOAK_LOGIN_URI }}" >> .env
+          echo "IMS_SHOULD_POPULATE=${{ vars.IMS_SHOULD_POPULATE }}" >> .env
+          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+          echo "BACKEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
+          echo "FRONTEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
+
+      - name: Set up docker compose with test-with-backend profile
+        working-directory: ./backend
+        run: |
+          # Ensure Keycloak permissions
+          mkdir -p ./keycloak/data && chmod -R 777 ./keycloak/data
+
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.head_ref || github.ref_name }}
+
+          docker compose --profile test-with-backend up -d
+
+          echo "Waiting for services to be ready..."
+          sleep 45
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        working-directory: ./frontend
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        working-directory: ./frontend
+        run: npx playwright test
+
+      - name: Cleanup Docker containers
+        if: always()
+        working-directory: ./backend
+        run: docker compose --profile test-with-backend down
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 30

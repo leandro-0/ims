@@ -23,7 +23,7 @@ export default function TablePagination(props: TablePaginationProps) {
             props.setCurrentPage(0)
           }}
         >
-          <SelectTrigger className="w-20">
+          <SelectTrigger className="w-20" id="change-page-size">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -72,9 +72,11 @@ export default function InventoryDashboard() {
     color: barColors[index % barColors.length]
   }))
 
+  const sumCategoriesMovement = data.categoriesMovement.reduce((sum, category) => sum + category.value, 0)
+
   const dataCategoriesMovements = data.categoriesMovement.map((category, index) => ({
     name: getCategoryLabel(category.name),
-    value: (category.value / (Math.max(data.movementsLast24Hours.in + data.movementsLast24Hours.out, 1))) * 100,
+    value: (category.value / (Math.max(sumCategoriesMovement, 1))) * 100,
     color: barColors[index % barColors.length]
   }))
 
@@ -137,6 +139,7 @@ export default function InventoryDashboard() {
           description={'Usuarios con mayor actividad en las últimas 24 horas'}
           valueUnit='movimientos'
           items={data.movementsLast24Hours.topUsers}
+          noValueText='No se han registrado movimientos'
         />
       </div>
 

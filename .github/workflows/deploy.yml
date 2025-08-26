@@ -1,0 +1,82 @@
+name: Deploy to Production Server
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    environment: production
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          TRAEFIK_USER: ${{ secrets.TRAEFIK_USER }}
+          TRAEFIK_PASSWORD: ${{ secrets.TRAEFIK_PASSWORD }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd /root
+
+            if [ ! -d "ims" ]; then
+              git clone https://github.com/leandro-0/ims.git ims
+            fi
+            cd ims/backend
+
+            # Ensure Keycloak permissions
+            mkdir -p ./keycloak/data && chmod -R 777 ./keycloak/data
+            mkdir -p ./grafana/data && chmod -R 777 ./grafana/data
+            mkdir -p ./grafana/dashboards && chmod -R 777 ./grafana/dashboards
+
+            # Always update the .env file with latest branch tag
+            TRAEFIK_HASH=$(echo "$TRAEFIK_PASSWORD" | openssl passwd -apr1 -stdin)
+
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+            echo "BACKEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
+            echo "FRONTEND_IMAGE_TAG=${{ github.head_ref || github.ref_name }}" >> .env
+            echo "POSTGRES_HOST=${{ vars.POSTGRES_HOST }}" >> .env
+            echo "POSTGRES_DB=${{ vars.POSTGRES_DB }}" >> .env
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+            echo "POSTGRES_PORT=${{ vars.POSTGRES_PORT }}" >> .env
+            echo "POSTGRES_URL=${{ secrets.POSTGRES_URL }}" >> .env
+            echo "KEYCLOAK_PORT=${{ vars.KEYCLOAK_PORT }}" >> .env
+            echo "KEYCLOAK_ADMIN_USER=${{ secrets.KEYCLOAK_ADMIN_USER }}" >> .env
+            echo "KEYCLOAK_ADMIN_PASSWORD=${{ secrets.KEYCLOAK_ADMIN_PASSWORD }}" >> .env
+            echo "KEYCLOAK_HOSTNAME=${{ vars.KEYCLOAK_HOSTNAME }}" >> .env
+            echo "KEYCLOAK_VOLUME_PATH=${{ vars.KEYCLOAK_VOLUME_PATH }}" >> .env
+            echo "KEYCLOAK_ISSUER_URI=${{ vars.KEYCLOAK_ISSUER_URI }}" >> .env
+            echo "KEYCLOAK_JWK_SET_URI=${{ vars.KEYCLOAK_JWK_SET_URI }}" >> .env
+            echo "KEYCLOAK_LOGIN_URI=${{ vars.KEYCLOAK_LOGIN_URI }}" >> .env
+            echo "IMS_SHOULD_POPULATE=${{ vars.IMS_SHOULD_POPULATE }}" >> .env
+            echo "AUTH_SECRET=${{ secrets.AUTH_SECRET }}" >> .env
+            echo "AUTH_TRUST_HOST=${{ vars.AUTH_TRUST_HOST }}" >> .env
+            echo "NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}" >> .env
+            echo "NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }}" >> .env
+            echo "KEYCLOAK_CLIENT_ID=${{ vars.KEYCLOAK_CLIENT_ID }}" >> .env
+            echo "KEYCLOAK_ISSUER=${{ vars.KEYCLOAK_ISSUER }}" >> .env
+            echo "KEYCLOAK_ISSUER_SERVER=${{ vars.KEYCLOAK_ISSUER_SERVER }}" >> .env
+            echo "ACME_EMAIL=${{ secrets.ACME_EMAIL }}" >> .env
+            echo "TRAEFIK_DASHBOARD_CREDENTIALS=${TRAEFIK_USER}:$TRAEFIK_HASH" >> .env
+            echo "PROMETHEUS_PORT=${{ vars.PROMETHEUS_PORT }}" >> .env
+            echo "GRAFANA_PORT=${{ vars.GRAFANA_PORT }}" >> .env
+            echo "GRAFANA_SECURITY_ADMIN_USER=${{ secrets.GRAFANA_SECURITY_ADMIN_USER }}" >> .env
+            echo "GRAFANA_SECURITY_ADMIN_PASSWORD=${{ secrets.GRAFANA_SECURITY_ADMIN_PASSWORD }}" >> .env
+
+            echo ".env file updated with branch tag: ${{ github.head_ref || github.ref_name }}"
+
+            git checkout ${{ github.ref_name }}
+            git pull origin ${{ github.ref_name }}
+
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-backend:${{ github.head_ref || github.ref_name }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/ims-frontend:${{ github.head_ref || github.ref_name }}
+
+            docker compose --profile prod up -d
+            docker image prune -f
+
+            echo "Deployment in production server completed."

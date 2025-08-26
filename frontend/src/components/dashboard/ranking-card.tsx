@@ -10,6 +10,7 @@ interface RankingCardProps {
     value: number
   }[]
   valueUnit?: string
+  noValueText?: string
 }
 
 export default function RankingCard(props: RankingCardProps) {
@@ -24,7 +25,11 @@ export default function RankingCard(props: RankingCardProps) {
       <CardContent className="space-y-4">
         <div>
           <div className="space-y-2">
-            {items.map((item, index) => (
+            {items.length === 0 && (
+              <span className="text-sm text-muted-foreground">{props.noValueText || 'No hay datos disponibles'}</span>
+            )}
+
+            {items.length > 0 && items.map((item, index) => (
               <div key={index} className="flex gap-3 items-center">
                 <Badge variant="secondary">{index + 1}</Badge>
                 <span className="text-sm">

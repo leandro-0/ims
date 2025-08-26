@@ -1,0 +1,49 @@
+name: Main Pipeline
+
+on:
+  push:
+    branches: [main, traefik]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+
+  pull_request:
+    branches: [main, traefik]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    uses: ./.github/workflows/build-and-push.yml
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit
+
+  playwright-tests:
+    name: Run Playwright Tests
+    needs: build-and-push
+    if: ${{ always() && needs.build-and-push.result == 'success' }}
+    uses: ./.github/workflows/playwright.yml
+    secrets: inherit
+
+  backend-tests:
+    name: Run Backend Tests
+    needs: build-and-push
+    if: ${{ always() && needs.build-and-push.result == 'success' }}
+    uses: ./.github/workflows/backend-tests.yml
+    secrets: inherit
+
+  deploy:
+    name: Deploy to Production
+    needs: [build-and-push, playwright-tests, backend-tests]
+    if: ${{ always() && needs.backend-tests.result == 'success' && needs.playwright-tests.result == 'success' && needs.build-and-push.result == 'success' && github.event_name != 'pull_request' }}
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

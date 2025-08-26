@@ -438,6 +438,30 @@
     }
   },
   "groups": [],
+  "users": [
+    {
+      "id": "test-user-id-123",
+      "username": "admin@example.com",
+      "email": "admin@example.com",
+      "emailVerified": true,
+      "enabled": true,
+      "firstName": "Test",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin1",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["default-roles-ims-realm"],
+      "clientRoles": {
+        "account": ["manage-account", "view-profile"],
+        "ims": ["role_admin"]
+      },
+      "groups": []
+    }
+  ],
   "defaultRole": {
     "id": "34e937f6-cfd6-4402-8dec-1c9719967138",
     "name": "default-roles-ims-realm",
