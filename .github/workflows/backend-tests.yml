@@ -53,6 +53,8 @@ jobs:
           # Wait for services to be ready
           sleep 45
 
+          docker ps
+
       - name: Clean and build project
         working-directory: backend
         run: ./gradlew clean build -x test
@@ -63,6 +65,7 @@ jobs:
 
       - name: Run Unit tests
         working-directory: backend
+        if: always()
         run: ./gradlew unitTest
 
       - name: Upload Cucumber test results
@@ -73,7 +76,7 @@ jobs:
           path: |
             backend/build/reports/tests/cucumberTest/index.html
             backend/target/cucumber-reports.html
-          retention-days: 3
+          retention-days: 30
 
       - name: Upload Unit test results
         uses: actions/upload-artifact@v4
@@ -81,4 +84,4 @@ jobs:
         with:
           name: unit-test-results
           path: backend/build/reports/tests/unitTest/index.html
-          retention-days: 3
+          retention-days: 30
