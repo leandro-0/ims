@@ -27,9 +27,16 @@ jobs:
     uses: ./.github/workflows/playwright.yml
     secrets: inherit
 
+  backend-tests:
+    name: Run Backend Tests
+    needs: build-and-push
+    if: ${{ always() && needs.build-and-push.result == 'success' }}
+    uses: ./.github/workflows/backend-tests.yml
+    secrets: inherit
+
   deploy:
     name: Deploy to Production
-    needs: [build-and-push, playwright-tests]
-    if: ${{ always() && needs.playwright-tests.result == 'success' && needs.build-and-push.result == 'success' && github.event_name != 'pull_request' }}
+    needs: [build-and-push, playwright-tests, backend-tests]
+    if: ${{ always() && needs.backend-tests.result == 'success' && needs.playwright-tests.result == 'success' && needs.build-and-push.result == 'success' && github.event_name != 'pull_request' }}
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
