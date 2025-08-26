@@ -32,7 +32,7 @@ function getStompBaseUrl(): string {
 }
 
 export class AppConfig {
-  public static readonly siteName = "Bento"
+  public static readonly siteName = "Bento Testing"
   public static readonly siteIcon = ShoppingBasket
   public static readonly apiBaseUrl = getApiBaseUrl()
   public static readonly stompBaseUrl = getStompBaseUrl()
