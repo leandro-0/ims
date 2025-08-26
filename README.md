@@ -9,7 +9,7 @@
 
 ### Planificación y Gestión de Proyecto
 
-- [Plan de Proyecto]()
+- [Plan de Proyecto](docs/project-plan/README.md)
 - [Gestión de Tareas]()
 - [Gestión de Riesgos](docs/risks-management/README.md)
 
