@@ -1,0 +1,8 @@
+FROM quay.io/keycloak/keycloak:26.2.5
+WORKDIR /opt/keycloak
+
+ENV KEYCLOAK_PORT=7080
+
+COPY ./keycloak/realm-test.json /opt/keycloak/data/import/
+
+ENTRYPOINT /opt/keycloak/bin/kc.sh start-dev --http-port ${KEYCLOAK_PORT} --import-realm
